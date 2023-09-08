@@ -29,7 +29,7 @@
 import unittest
 
 from os import getenv
-from os.path import join, dirname
+from os.path import join, exists
 from ovos_utils.messagebus import FakeBus
 from ovos_utils.log import LOG
 
@@ -37,6 +37,7 @@ from neon_minerva.exceptions import IntentException
 from neon_minerva.skill import get_skill_object, load_intent_tests
 from neon_minerva.intent_services.padatious import PadatiousContainer, TestPadatiousMatcher
 from neon_minerva.intent_services.adapt import AdaptContainer
+from neon_minerva.intent_services.padacioso import PadaciosoContainer
 from neon_minerva.intent_services import IntentMatch
 
 
@@ -46,27 +47,27 @@ class TestSkillIntentMatching(unittest.TestCase):
     bus.run_forever()
     test_skill_id = 'test_skill.test'
     padatious_cache = join(getenv("XDG_CACHE_HOME"), "padatious")
+
     # Define skill and resource spec to use in tests
     valid_intents = load_intent_tests(getenv("INTENT_TEST_FILE"))
     skill_entrypoint = getenv("TEST_SKILL_ENTRYPOINT")
 
-
+    # Populate configuration
     languages = list(valid_intents.keys())
     core_config_patch = {"secondary_langs": languages}
-    if getenv("OVOS_DEFAULT_LOG_LEVEL"):
-        LOG.level = getenv("OVOS_DEFAULT_LOG_LEVEL")
-        core_config_patch["log_level"] = getenv("OVOS_DEFAULT_LOG_LEVEL")
     negative_intents = valid_intents.pop('unmatched intents', dict())
     common_query = valid_intents.pop("common query", dict())
 
     # Define intent parsers for tests
-    # TODO: Support padacioso
+    if getenv("TEST_PADACIOSO") == "true":
+        container = PadaciosoContainer
+    else:
+        container = PadatiousContainer
     padatious_services = dict()
     adapt_services = dict()
     for lang in languages:
-        padatious_services[lang] = PadatiousContainer(lang,
-                                                      join(padatious_cache,
-                                                           lang), bus)
+        padatious_services[lang] = container(lang, join(padatious_cache, lang),
+                                             bus)
         adapt_services[lang] = AdaptContainer(lang, bus)
 
     skill = get_skill_object(skill_entrypoint=skill_entrypoint,
@@ -78,7 +79,8 @@ class TestSkillIntentMatching(unittest.TestCase):
         import shutil
         for service in cls.padatious_services.values():
             try:
-                shutil.rmtree(service.padatious.cache_dir)
+                if exists(service.cache_dir):
+                    shutil.rmtree(service.cache_dir)
             except Exception as e:
                 LOG.exception(e)
 

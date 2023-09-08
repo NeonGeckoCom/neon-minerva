@@ -23,7 +23,7 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+import logging
 import os
 import click
 
@@ -52,7 +52,6 @@ def _init_tests(debug: bool = False):
 
     if debug:
         os.environ["OVOS_DEFAULT_LOG_LEVEL"] = "DEBUG"
-
 
 def _get_test_file(test_file: str) -> str:
     """
@@ -114,10 +113,13 @@ def test_resources(skill_entrypoint, test_file, debug):
 @neon_minerva_cli.command
 @click.option('--debug', is_flag=True, default=False,
               help="Flag to enable debug logging")
+@click.option('--padacioso', is_flag=True, default=False,
+              help="Flag to enable testing with Padacioso instead of Padatious")
 @click.argument("skill_entrypoint")
 @click.argument("test_file")
-def test_intents(skill_entrypoint, test_file, debug):
+def test_intents(skill_entrypoint, test_file, debug, padacioso):
     _init_tests(debug)
+    os.environ["TEST_PADACIOSO"] = "true" if padacioso else "false"
     os.environ["TEST_SKILL_ENTRYPOINT"] = _get_skill_entrypoint(skill_entrypoint)
     test_file = _get_test_file(test_file)
     if not isfile(test_file):
