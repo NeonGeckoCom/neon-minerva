@@ -23,21 +23,21 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-from typing import Optional
 
 import yaml
 
-from os.path import expanduser, isfile
-
+from os.path import expanduser, isfile, isdir
+from typing import Optional
 from ovos_utils.messagebus import FakeBus
 from ovos_workshop.skills.base import BaseSkill
+from ovos_utils.log import LOG
 
 
 def get_skill_object(skill_entrypoint: str, bus: FakeBus,
                      skill_id: str, config_patch: Optional[dict] = None) -> BaseSkill:
     """
     Get an initialized skill object by entrypoint with the requested skill_id.
-    @param skill_entrypoint: Skill plugin entrypoint
+    @param skill_entrypoint: Skill plugin entrypoint or directory path
     @param bus: FakeBus instance to bind to skill for testing
     @param skill_id: skill_id to initialize skill with
     @returns: Initialized skill object
@@ -45,6 +45,12 @@ def get_skill_object(skill_entrypoint: str, bus: FakeBus,
     if config_patch:
         from ovos_config.config import update_mycroft_config
         update_mycroft_config(config_patch)
+    if isdir(skill_entrypoint):
+        LOG.info(f"Loading local skill: {skill_entrypoint}")
+        from ovos_workshop.skill_launcher import SkillLoader
+        loader = SkillLoader(bus, skill_entrypoint, skill_id)
+        if loader.load():
+            return loader.instance
     from ovos_plugin_manager.skills import find_skill_plugins
     plugins = find_skill_plugins()
     if skill_entrypoint not in plugins:
@@ -68,5 +74,15 @@ def load_resource_tests(test_file: str) -> dict:
     return resources
 
 
-if __name__ == "__main__":
-    get_skill_object("skill-about.neongeckocom", FakeBus(), "test")
+def load_intent_tests(test_file: str) -> dict:
+    """
+    Load intent tests from a file
+    @param test_file: Test file to load
+    @returns: Loaded test spec
+    """
+    test_file = expanduser(test_file)
+    if not isfile(test_file):
+        raise FileNotFoundError(test_file)
+    with open(test_file) as f:
+        intents = yaml.safe_load(f)
+    return intents

@@ -36,11 +36,7 @@ from ovos_utils.messagebus import FakeBus
 from neon_minerva.skill import get_skill_object, load_resource_tests
 
 
-class TestSkillLoading(unittest.TestCase):
-    """
-    Test skill loading, intent registration, and langauge support. Test cases
-    are generic, only class variables should be modified per-skill.
-    """
+class TestSkillResources(unittest.TestCase):
     # Static parameters
     messages = list()
     bus = FakeBus()
@@ -50,20 +46,6 @@ class TestSkillLoading(unittest.TestCase):
     # Define skill and resource spec to use in tests
     resources = load_resource_tests(getenv("RESOURCE_TEST_FILE"))
     skill_entrypoint = getenv("TEST_SKILL_ENTRYPOINT")
-
-    # Default Core Events
-    default_events = ["mycroft.skill.enable_intent",
-                      "mycroft.skill.disable_intent",
-                      "mycroft.skill.set_cross_context",
-                      "mycroft.skill.remove_cross_context",
-                      "intent.service.skills.deactivated",
-                      "intent.service.skills.activated",
-                      "mycroft.skills.settings.changed",
-                      "skill.converse.ping",
-                      "skill.converse.request",
-                      f"{test_skill_id}.activate",
-                      f"{test_skill_id}.deactivate"
-                      ]
 
     # Specify valid languages to test
     supported_languages = resources['languages']
@@ -86,8 +68,8 @@ class TestSkillLoading(unittest.TestCase):
         cls.bus.on("message", cls._on_message)
 
         cls.skill = get_skill_object(skill_entrypoint=cls.skill_entrypoint,
-                                 bus=cls.bus, skill_id=cls.test_skill_id,
-                                 config_patch=cls.core_config_patch)
+                                     bus=cls.bus, skill_id=cls.test_skill_id,
+                                     config_patch=cls.core_config_patch)
 
         cls.adapt_intents = {f'{cls.test_skill_id}:{intent}'
                              for intent in cls.adapt_intents}
@@ -103,12 +85,6 @@ class TestSkillLoading(unittest.TestCase):
         self.assertEqual(set([self.skill._core_lang] +
                              self.skill._secondary_langs),
                          set(self.supported_languages))
-        for msg in self.messages:
-            # TODO: Patching ovos.common_play.announce which should probably add
-            #       skill_id to context (null context at time of writing)
-            skill_id = msg["context"].get("skill_id") or \
-                msg["data"].get("skill_id")
-            self.assertEqual(skill_id, self.test_skill_id, msg)
 
     def test_intent_registration(self):
         registered_adapt = list()
@@ -158,11 +134,6 @@ class TestSkillLoading(unittest.TestCase):
                 # Ensure every rx file has exactly one entry
                 self.assertTrue(all((rx in line for line in
                                      registered_regex[lang][rx])), self.regex)
-
-    def test_skill_events(self):
-        events = self.default_events + list(self.adapt_intents)
-        for event in events:
-            self.assertIn(event, [e[0] for e in self.skill.events], event)
 
     def test_dialog_files(self):
         for lang in self.supported_languages:

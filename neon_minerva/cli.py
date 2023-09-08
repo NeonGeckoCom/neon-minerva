@@ -27,7 +27,7 @@
 import os
 import click
 
-from os.path import expanduser, relpath, isfile
+from os.path import expanduser, relpath, isfile, isdir
 from click_default_group import DefaultGroup
 from unittest.runner import TextTestRunner
 from unittest import makeSuite
@@ -35,17 +35,51 @@ from unittest import makeSuite
 from neon_minerva.version import __version__
 
 
-def _init_test_dir():
+def _init_tests(debug: bool = False):
     from os.path import join
     from os import makedirs
     from tempfile import mkdtemp
     base_dir = mkdtemp()
     config = join(base_dir, "config")
     data = join(base_dir, "data")
+    cache = join(base_dir, "cache")
     makedirs(config, exist_ok=True)
     makedirs(data, exist_ok=True)
+    makedirs(cache, exist_ok=True)
     os.environ["XDG_CONFIG_HOME"] = config
     os.environ["XDG_DATA_HOME"] = data
+    os.environ["XDG_CACHE_HOME"] = cache
+
+    if debug:
+        os.environ["OVOS_DEFAULT_LOG_LEVEL"] = "DEBUG"
+
+
+def _get_test_file(test_file: str) -> str:
+    """
+    Parse an input path to locate a test file that may be relative to `~` or the
+    current working directory.
+    @param test_file: test file argument
+    @returns: best guess at the desired file path (may not exist)
+    """
+    test_file = expanduser(test_file)
+    if not isfile(test_file):
+        test_file = relpath(test_file)
+    return test_file
+
+
+def _get_skill_entrypoint(skill_entrypoint: str) -> str:
+    """
+    Parse an input skill entrypoint and resolve either a locally installed skill
+    path, or an entrypoint for a plugin skill.
+    @param skill_entrypoint: Plugin entrypoint or path to skill
+    @returns: absolute file path if exists, else input entrypoint
+    """
+    skill_path = expanduser(skill_entrypoint)
+    if not isdir(skill_path):
+        skill_path = relpath(skill_path)
+    if isdir(skill_path):
+        return skill_path
+    return skill_entrypoint
 
 
 @click.group("minerva", cls=DefaultGroup,
@@ -61,18 +95,34 @@ def neon_minerva_cli(version: bool = False):
 
 
 @neon_minerva_cli.command
+@click.option('--debug', is_flag=True, default=False,
+              help="Flag to enable debug logging")
 @click.argument("skill_entrypoint")
 @click.argument("test_file")
-def test_resources(skill_entrypoint, test_file):
-    _init_test_dir()
-    os.environ["TEST_SKILL_ENTRYPOINT"] = skill_entrypoint
-    test_file = expanduser(test_file)
-    if not isfile(test_file):
-        test_file = relpath(test_file)
+def test_resources(skill_entrypoint, test_file, debug):
+    _init_tests(debug)
+    os.environ["TEST_SKILL_ENTRYPOINT"] = _get_skill_entrypoint(skill_entrypoint)
+    test_file = _get_test_file(test_file)
     if not isfile(test_file):
         click.echo(f"Could not find test file: {test_file}")
         exit(2)
     os.environ["RESOURCE_TEST_FILE"] = test_file
-    from neon_minerva.tests.test_skill_resources import TestSkillLoading
-    TextTestRunner().run(makeSuite(TestSkillLoading))
+    from neon_minerva.tests.test_skill_resources import TestSkillResources
+    TextTestRunner().run(makeSuite(TestSkillResources))
 
+
+@neon_minerva_cli.command
+@click.option('--debug', is_flag=True, default=False,
+              help="Flag to enable debug logging")
+@click.argument("skill_entrypoint")
+@click.argument("test_file")
+def test_intents(skill_entrypoint, test_file, debug):
+    _init_tests(debug)
+    os.environ["TEST_SKILL_ENTRYPOINT"] = _get_skill_entrypoint(skill_entrypoint)
+    test_file = _get_test_file(test_file)
+    if not isfile(test_file):
+        click.echo(f"Could not find test file: {test_file}")
+        exit(2)
+    os.environ["INTENT_TEST_FILE"] = test_file
+    from neon_minerva.tests.test_skill_intents import TestSkillIntentMatching
+    TextTestRunner().run(makeSuite(TestSkillIntentMatching))
