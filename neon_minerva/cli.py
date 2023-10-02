@@ -54,6 +54,7 @@ def _init_tests(debug: bool = False):
     if debug:
         os.environ["OVOS_DEFAULT_LOG_LEVEL"] = "DEBUG"
 
+
 def _get_test_file(test_file: str) -> str:
     """
     Parse an input path to locate a test file that may be relative to `~` or the
@@ -138,6 +139,8 @@ def test_intents(skill_entrypoint, test_file, debug, padacioso):
 def test_text_inputs(lang, test_file):
     from neon_utils.file_utils import load_commented_file
     from neon_minerva.integration.text import TextIntentTests
+
+    test_file = _get_test_file(test_file)
     prompts = load_commented_file(test_file).split('\n')
     click.echo(f"Testing {len(prompts)} prompts")
     runner = TextIntentTests(prompts, lang)

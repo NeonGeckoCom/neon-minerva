@@ -38,10 +38,14 @@ class TextIntentTests:
         self.core_bus.run_in_thread()
         self.lang = lang
         self._prompts = prompts
+        self._intent_timeout = 15
+        self._speak_timeout = 30
+
         self._results = list()
         self._audio_output_done = Event()
         self._prompt_handled = Event()
         self._prompt_lock = Lock()
+
         self._last_message = None
         self._audio_output_done.set()
         self.register_bus_events()
@@ -108,14 +112,14 @@ class TextIntentTests:
             # Ensure event state matches expectation
             if not self._audio_output_done.is_set():
                 LOG.warning("Audio output not finished when expected!")
-                self._audio_output_done.set()
+            self._audio_output_done.clear()
             self._prompt_handled.clear()
             self._last_message = None
 
             # Send prompt
             self.send_prompt(prompt)
-            assert self._prompt_handled.wait(60)
-            assert self._audio_output_done.wait(30)
+            assert self._prompt_handled.wait(self._intent_timeout)
+            assert self._audio_output_done.wait(self._speak_timeout)
             assert self._last_message is not None
             self._results.append(self._last_message)
         LOG.debug(f"Handled {prompt}")
