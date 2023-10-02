@@ -25,6 +25,7 @@
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from threading import Event, Lock
+from time import time
 from typing import List
 from ovos_utils.log import LOG
 from ovos_bus_client.client import MessageBusClient
@@ -105,6 +106,7 @@ class TextIntentTests:
                                    {"neon_should_respond": True,
                                     "source": ["minerva"],
                                     "destination": ["skills"],
+                                    "timing": {"emitted": time()},
                                     "username": "minerva"}))
 
     def handle_prompt(self, prompt: str):
