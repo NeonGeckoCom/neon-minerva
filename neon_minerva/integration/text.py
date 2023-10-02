@@ -38,7 +38,7 @@ class TextIntentTests:
         self.core_bus = MessageBusClient(**bus_config)
         self.core_bus.run_in_thread()
         self.lang = lang
-        self._prompts = prompts
+        self._prompts = prompts  # TODO: Handle prompt metadata for longer timeouts
         self._intent_timeout = 30
         self._speak_timeout = 60
 
@@ -51,12 +51,27 @@ class TextIntentTests:
         self._audio_output_done.set()
         self.register_bus_events()
 
-    def run_test(self) -> List[Message]:
+    def run_test(self) -> dict:
         self._results.clear()
         for prompt in self._prompts:
             self.handle_prompt(prompt)
-        # TODO: Format results into parseable data
-        return self._results
+        aggregated_results = {"save_transcript": [],
+                              "text_parsers": [],
+                              "get_tts": [],
+                              "intent_handler": [],
+                              "total": []}
+        for result in self._results:
+            aggregated_results['save_transcript'].append(result['save_transcript'])
+            aggregated_results['text_parsers'].append(result['text_parsers'])
+            aggregated_results['get_tts'].append(result['get_tts'])
+            aggregated_results['intent_handler'].append(result['speech_start'] - result['handle_utterance'])
+            aggregated_results['total'].append(result['finished'] - result['transcribed'])
+        formatted_results = dict()
+        for key, values in aggregated_results:
+            formatted_results[key] = {"average": sum(values) / len(values),
+                                      "minimum": min(values),
+                                      "maximum": max(values)}
+        return formatted_results
 
     def register_bus_events(self):
         self.core_bus.on("recognizer_loop:audio_output_start",
@@ -124,7 +139,7 @@ class TextIntentTests:
                 assert self._prompt_handled.wait(self._intent_timeout)
                 assert self._audio_output_done.wait(self._speak_timeout)
                 assert self._last_message is not None
-                self._results.append(self._last_message.context["timing"])
+                self._results.append({**self._last_message.context["timing"], **{'finished': time()}})
             except AssertionError as e:
                 LOG.error(f"{prompt}: {e}")
         LOG.debug(f"Handled {prompt}")
