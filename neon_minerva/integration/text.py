@@ -106,7 +106,7 @@ class TextIntentTests:
                                    {"neon_should_respond": True,
                                     "source": ["minerva"],
                                     "destination": ["skills"],
-                                    "timing": {"emitted": time()},
+                                    "timing": {"transcribed": time()},
                                     "username": "minerva"}))
 
     def handle_prompt(self, prompt: str):
@@ -123,5 +123,6 @@ class TextIntentTests:
             assert self._prompt_handled.wait(self._intent_timeout)
             assert self._audio_output_done.wait(self._speak_timeout)
             assert self._last_message is not None
+            LOG.info(self._last_message.context)
             self._results.append(self._last_message.context["timing"])
         LOG.debug(f"Handled {prompt}")
