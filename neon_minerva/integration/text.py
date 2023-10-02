@@ -121,5 +121,5 @@ class TextIntentTests:
             assert self._prompt_handled.wait(self._intent_timeout)
             assert self._audio_output_done.wait(self._speak_timeout)
             assert self._last_message is not None
-            self._results.append(self._last_message)
+            self._results.append(self._last_message.context["timing"])
         LOG.debug(f"Handled {prompt}")
