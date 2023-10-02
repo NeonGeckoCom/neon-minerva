@@ -137,9 +137,9 @@ def test_intents(skill_entrypoint, test_file, debug, padacioso):
 @click.argument("test_file")
 def test_text_inputs(lang, test_file):
     from neon_utils.file_utils import load_commented_file
-    from neon_minerva.integration.text_test_runner import TextTestRunner
+    from neon_minerva.integration.text import TextIntentTests
     prompts = load_commented_file(test_file).split('\n')
     click.echo(f"Testing {len(prompts)} prompts")
-    runner = TextTestRunner(prompts, lang)
+    runner = TextIntentTests(prompts, lang)
     results = runner.run_test()
     click.echo(pformat(results))

@@ -31,10 +31,11 @@ from ovos_bus_client.client import MessageBusClient
 from ovos_bus_client.message import Message
 
 
-class TextTestRunner:
+class TextIntentTests:
     def __init__(self, prompts: List[str], lang: str = "en-us", bus_config: dict = None):
         bus_config = bus_config or dict()
         self.core_bus = MessageBusClient(**bus_config)
+        self.core_bus.run_in_thread()
         self.lang = lang
         self._prompts = prompts
         self._results = list()
