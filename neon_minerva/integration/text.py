@@ -39,11 +39,12 @@ class TextIntentTests:
         self.lang = lang
         self._prompts = prompts
         self._results = list()
-        self.register_bus_events()
         self._audio_output_done = Event()
         self._prompt_handled = Event()
         self._prompt_lock = Lock()
         self._last_message = None
+        self._audio_output_done.set()
+        self.register_bus_events()
 
     def run_test(self) -> List[Message]:
         self._results.clear()
@@ -113,8 +114,8 @@ class TextIntentTests:
 
             # Send prompt
             self.send_prompt(prompt)
-            self._prompt_handled.wait(60)
-            self._audio_output_done.wait(30)
+            assert self._prompt_handled.wait(60)
+            assert self._audio_output_done.wait(30)
             assert self._last_message is not None
             self._results.append(self._last_message)
         LOG.debug(f"Handled {prompt}")
