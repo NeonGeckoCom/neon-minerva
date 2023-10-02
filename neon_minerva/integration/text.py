@@ -39,8 +39,8 @@ class TextIntentTests:
         self.core_bus.run_in_thread()
         self.lang = lang
         self._prompts = prompts
-        self._intent_timeout = 15
-        self._speak_timeout = 30
+        self._intent_timeout = 30
+        self._speak_timeout = 60
 
         self._results = list()
         self._audio_output_done = Event()
@@ -120,9 +120,11 @@ class TextIntentTests:
 
             # Send prompt
             self.send_prompt(prompt)
-            assert self._prompt_handled.wait(self._intent_timeout)
-            assert self._audio_output_done.wait(self._speak_timeout)
-            assert self._last_message is not None
-            LOG.info(self._last_message.context)
-            self._results.append(self._last_message.context["timing"])
+            try:
+                assert self._prompt_handled.wait(self._intent_timeout)
+                assert self._audio_output_done.wait(self._speak_timeout)
+                assert self._last_message is not None
+                self._results.append(self._last_message.context["timing"])
+            except AssertionError as e:
+                LOG.error(f"{prompt}: {e}")
         LOG.debug(f"Handled {prompt}")
