@@ -44,6 +44,7 @@ class IntentTests:
         self.test_audio = audio
         self._tts = OVOSTTSFactory.create() if audio else None
         self._prompts = prompts  # TODO: Handle prompt metadata for longer timeouts
+        self._stt_timeout = 60
         self._intent_timeout = 30
         self._speak_timeout = 60
 
@@ -130,7 +131,7 @@ class IntentTests:
             audio, _ = self._tts.get_tts(prompt, file_path, lang=self.lang)
             resp = self.core_bus.wait_for_response(Message("neon.audio_input",
                                                            {"audio_data": encode_file_to_base64_string(file_path),
-                                                            "lang": self.lang}, context), timeout=30)
+                                                            "lang": self.lang}, context), timeout=self._stt_timeout)
             LOG.info(resp.data)
             if prompt not in resp.data['transcripts']:
                 raise RuntimeError(f"Invalid transcription for '{prompt}': {resp.data['utterances']}")
@@ -144,6 +145,7 @@ class IntentTests:
             # Ensure event state matches expectation
             if not self._audio_output_done.is_set():
                 LOG.warning("Audio output not finished when expected!")
+                self._audio_output_done.wait(self._speak_timeout)
             self._audio_output_done.clear()
             self._prompt_handled.clear()
             self._last_message = None
