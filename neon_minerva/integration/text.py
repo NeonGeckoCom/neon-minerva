@@ -23,21 +23,26 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+from tempfile import mkstemp
 from threading import Event, Lock
 from time import time
 from typing import List
+
+from neon_utils.file_utils import encode_file_to_base64_string
 from ovos_utils.log import LOG
 from ovos_bus_client.client import MessageBusClient
 from ovos_bus_client.message import Message
+from ovos_plugin_manager.tts import OVOSTTSFactory
 
 
-class TextIntentTests:
-    def __init__(self, prompts: List[str], lang: str = "en-us", bus_config: dict = None):
+class IntentTests:
+    def __init__(self, prompts: List[str], lang: str = "en-us", bus_config: dict = None, audio: bool = False):
         bus_config = bus_config or dict()
         self.core_bus = MessageBusClient(**bus_config)
         self.core_bus.run_in_thread()
         self.lang = lang
+        self.test_audio = audio
+        self._tts = OVOSTTSFactory.create()
         self._prompts = prompts  # TODO: Handle prompt metadata for longer timeouts
         self._intent_timeout = 30
         self._speak_timeout = 60
@@ -115,14 +120,23 @@ class TextIntentTests:
         Send a prompt to core for intent handling
         """
         # TODO: Define user profile
-        self.core_bus.emit(Message("recognizer_loop:utterance",
-                                   {"utterances": [prompt],
-                                    "lang": self.lang},
-                                   {"neon_should_respond": True,
-                                    "source": ["minerva"],
-                                    "destination": ["skills"],
-                                    "timing": {"transcribed": time()},
-                                    "username": "minerva"}))
+        context = {"neon_should_respond": True,
+                   "source": ["minerva"],
+                   "destination": ["skills"],
+                   "timing": {"transcribed": time()},
+                   "username": "minerva"}
+        if self.test_audio:
+            _, file_path = mkstemp()
+            audio, _ = self._tts.get_tts(prompt, file_path, self.lang)
+            resp = self.core_bus.wait_for_response(Message("neon.audio_input",
+                                                           {"audio_data": encode_file_to_base64_string(file_path),
+                                                            "lang": self.lang}, context), timeout=30)
+            if prompt not in resp.data['utterances']:
+                raise RuntimeError(f"Invalid transcription for '{prompt}': {resp.data['utterances']}")
+        else:
+            self.core_bus.emit(Message("recognizer_loop:utterance",
+                                       {"utterances": [prompt],
+                                        "lang": self.lang}, context))
 
     def handle_prompt(self, prompt: str):
         with self._prompt_lock:

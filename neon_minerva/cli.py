@@ -135,14 +135,16 @@ def test_intents(skill_entrypoint, test_file, debug, padacioso):
 @neon_minerva_cli.command
 @click.option('-l', '--lang', default="en-us",
               help="Language of test_file inputs")
+@click.option('-a', '--audio', is_flag=True, default=False,
+              help="Test input as audio")
 @click.argument("test_file")
-def test_text_inputs(lang, test_file):
+def test_text_inputs(lang, audio, test_file):
     from neon_utils.file_utils import load_commented_file
-    from neon_minerva.integration.text import TextIntentTests
+    from neon_minerva.integration.text import IntentTests
 
     test_file = _get_test_file(test_file)
     prompts = load_commented_file(test_file).split('\n')
     click.echo(f"Testing {len(prompts)} prompts")
-    runner = TextIntentTests(prompts, lang)
+    runner = IntentTests(prompts, lang=lang, audio=audio)
     results = runner.run_test()
     click.echo(pformat(results))
