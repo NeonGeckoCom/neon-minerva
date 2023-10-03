@@ -42,7 +42,7 @@ class IntentTests:
         self.core_bus.run_in_thread()
         self.lang = lang
         self.test_audio = audio
-        self._tts = OVOSTTSFactory.create()
+        self._tts = OVOSTTSFactory.create() if audio else None
         self._prompts = prompts  # TODO: Handle prompt metadata for longer timeouts
         self._intent_timeout = 30
         self._speak_timeout = 60
@@ -127,7 +127,7 @@ class IntentTests:
                    "username": "minerva"}
         if self.test_audio:
             _, file_path = mkstemp()
-            audio, _ = self._tts.get_tts(prompt, file_path, self.lang)
+            audio, _ = self._tts.get_tts(prompt, file_path, lang=self.lang)
             resp = self.core_bus.wait_for_response(Message("neon.audio_input",
                                                            {"audio_data": encode_file_to_base64_string(file_path),
                                                             "lang": self.lang}, context), timeout=30)
