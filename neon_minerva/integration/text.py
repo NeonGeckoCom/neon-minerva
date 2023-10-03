@@ -67,7 +67,7 @@ class TextIntentTests:
             aggregated_results['intent_handler'].append(result['speech_start'] - result['handle_utterance'])
             aggregated_results['total'].append(result['finished'] - result['transcribed'])
         formatted_results = dict()
-        for key, values in aggregated_results:
+        for key, values in aggregated_results.items():
             formatted_results[key] = {"average": sum(values) / len(values),
                                       "minimum": min(values),
                                       "maximum": max(values)}
