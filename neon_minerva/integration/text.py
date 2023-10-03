@@ -66,12 +66,16 @@ class IntentTests:
                               "get_tts": [],
                               "intent_handler": [],
                               "total": []}
+        if self.test_audio:
+            aggregated_results['get_stt'] = []
         for result in self._results:
             aggregated_results['save_transcript'].append(result['save_transcript'])
             aggregated_results['text_parsers'].append(result['text_parsers'])
             aggregated_results['get_tts'].append(result['get_tts'])
             aggregated_results['intent_handler'].append(result['speech_start'] - result['handle_utterance'])
             aggregated_results['total'].append(result['finished'] - result['transcribed'])
+            if self.test_audio:
+                aggregated_results['get_stt'].append(result['get_stt'])
         formatted_results = dict()
         for key, values in aggregated_results.items():
             formatted_results[key] = {"average": sum(values) / len(values),
