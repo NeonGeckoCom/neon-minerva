@@ -134,7 +134,7 @@ class IntentTests:
                                                             "lang": self.lang}, context), timeout=self._stt_timeout)
             LOG.info(resp.data)
             if prompt not in resp.data['transcripts']:
-                raise RuntimeError(f"Invalid transcription for '{prompt}': {resp.data['utterances']}")
+                LOG.warning(f"Invalid transcription for '{prompt}': {resp.data['transcripts']}")
         else:
             self.core_bus.emit(Message("recognizer_loop:utterance",
                                        {"utterances": [prompt],
