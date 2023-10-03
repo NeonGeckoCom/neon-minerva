@@ -131,7 +131,8 @@ class IntentTests:
             resp = self.core_bus.wait_for_response(Message("neon.audio_input",
                                                            {"audio_data": encode_file_to_base64_string(file_path),
                                                             "lang": self.lang}, context), timeout=30)
-            if prompt not in resp.data['utterances']:
+            LOG.info(resp.data)
+            if prompt not in resp.data['transcripts']:
                 raise RuntimeError(f"Invalid transcription for '{prompt}': {resp.data['utterances']}")
         else:
             self.core_bus.emit(Message("recognizer_loop:utterance",
