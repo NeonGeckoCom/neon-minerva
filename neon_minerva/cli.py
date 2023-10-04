@@ -137,7 +137,7 @@ def test_intents(skill_entrypoint, test_file, debug, padacioso):
               help="Language of test_file inputs")
 @click.option('-a', '--audio', is_flag=True, default=False,
               help="Test input as audio")
-@click.argument("test_file", help="Path to text file containing utterances")
+@click.argument("test_file")
 def test_utterances(lang, audio, test_file):
     from neon_utils.file_utils import load_commented_file
     from neon_minerva.integration.user_utterance import UtteranceTests
