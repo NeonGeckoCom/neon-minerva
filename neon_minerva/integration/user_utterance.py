@@ -41,7 +41,7 @@ class UtteranceTests:
                  audio: bool = False):
         if not user_config:
             from neon_utils.configuration_utils import get_neon_user_config
-            user_config = get_neon_user_config()
+            user_config = get_neon_user_config().content
         user_config['user']['username'] = "minerva"
         self._user_config = user_config
         bus_config = bus_config or dict()
