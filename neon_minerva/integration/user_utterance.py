@@ -37,7 +37,13 @@ from ovos_plugin_manager.tts import OVOSTTSFactory
 
 class UtteranceTests:
     def __init__(self, prompts: List[str], lang: str = "en-us",
-                 bus_config: dict = None, audio: bool = False):
+                 bus_config: dict = None, user_config: dict = None,
+                 audio: bool = False):
+        if not user_config:
+            from neon_utils.configuration_utils import get_neon_user_config
+            user_config = get_neon_user_config()
+        user_config['user']['username'] = "minerva"
+        self._user_config = user_config
         bus_config = bus_config or dict()
         self.core_bus = MessageBusClient(**bus_config)
         self.core_bus.run_in_thread()
@@ -126,12 +132,12 @@ class UtteranceTests:
         """
         Send a prompt to core for intent handling
         """
-        # TODO: Define user profile
         context = {"neon_should_respond": True,
                    "source": ["minerva"],
                    "destination": ["skills"],
                    "timing": {"transcribed": time()},
-                   "username": "minerva"}
+                   "username": "minerva",
+                   "user_profiles": [self._user_config]}
         if self.test_audio:
             _, file_path = mkstemp()
             audio, _ = self._tts.get_tts(prompt, file_path, lang=self.lang)
