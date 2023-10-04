@@ -35,15 +35,17 @@ from ovos_bus_client.message import Message
 from ovos_plugin_manager.tts import OVOSTTSFactory
 
 
-class IntentTests:
-    def __init__(self, prompts: List[str], lang: str = "en-us", bus_config: dict = None, audio: bool = False):
+class UtteranceTests:
+    def __init__(self, prompts: List[str], lang: str = "en-us",
+                 bus_config: dict = None, audio: bool = False):
         bus_config = bus_config or dict()
         self.core_bus = MessageBusClient(**bus_config)
         self.core_bus.run_in_thread()
         self.lang = lang
         self.test_audio = audio
         self._tts = OVOSTTSFactory.create() if audio else None
-        self._prompts = prompts  # TODO: Handle prompt metadata for longer timeouts
+        # TODO: Handle prompt metadata for longer timeouts
+        self._prompts = prompts
         self._stt_timeout = 60
         self._intent_timeout = 30
         self._speak_timeout = 60
@@ -133,12 +135,15 @@ class IntentTests:
         if self.test_audio:
             _, file_path = mkstemp()
             audio, _ = self._tts.get_tts(prompt, file_path, lang=self.lang)
-            resp = self.core_bus.wait_for_response(Message("neon.audio_input",
-                                                           {"audio_data": encode_file_to_base64_string(file_path),
-                                                            "lang": self.lang}, context), timeout=self._stt_timeout)
+            resp = self.core_bus.wait_for_response(
+                Message("neon.audio_input",
+                        {"audio_data": encode_file_to_base64_string(file_path),
+                         "lang": self.lang}, context),
+                timeout=self._stt_timeout)
             LOG.info(resp.data)
             if prompt not in resp.data['transcripts']:
-                LOG.warning(f"Invalid transcription for '{prompt}': {resp.data['transcripts']}")
+                LOG.warning(f"Invalid transcription for '{prompt}': "
+                            f"{resp.data['transcripts']}")
         else:
             self.core_bus.emit(Message("recognizer_loop:utterance",
                                        {"utterances": [prompt],
@@ -160,7 +165,8 @@ class IntentTests:
                 assert self._prompt_handled.wait(self._intent_timeout)
                 assert self._audio_output_done.wait(self._speak_timeout)
                 assert self._last_message is not None
-                self._results.append({**self._last_message.context["timing"], **{'finished': time()}})
+                self._results.append({**self._last_message.context["timing"],
+                                      **{'finished': time()}})
             except AssertionError as e:
                 LOG.error(f"{prompt}: {e}")
         LOG.debug(f"Handled {prompt}")

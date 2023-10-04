@@ -137,14 +137,14 @@ def test_intents(skill_entrypoint, test_file, debug, padacioso):
               help="Language of test_file inputs")
 @click.option('-a', '--audio', is_flag=True, default=False,
               help="Test input as audio")
-@click.argument("test_file")
-def test_text_inputs(lang, audio, test_file):
+@click.argument("test_file", help="Path to text file containing utterances")
+def test_utterances(lang, audio, test_file):
     from neon_utils.file_utils import load_commented_file
-    from neon_minerva.integration.text import IntentTests
+    from neon_minerva.integration.user_utterance import UtteranceTests
 
     test_file = _get_test_file(test_file)
     prompts = load_commented_file(test_file).split('\n')
     click.echo(f"Testing {len(prompts)} prompts")
-    runner = IntentTests(prompts, lang=lang, audio=audio)
+    runner = UtteranceTests(prompts, lang=lang, audio=audio)
     results = runner.run_test()
     click.echo(pformat(results))
