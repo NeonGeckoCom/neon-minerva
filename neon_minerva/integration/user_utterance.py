@@ -23,6 +23,7 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 from tempfile import mkstemp
 from threading import Event, Lock
 from time import time
@@ -32,7 +33,7 @@ from neon_utils.file_utils import encode_file_to_base64_string
 from ovos_utils.log import LOG
 from ovos_bus_client.client import MessageBusClient
 from ovos_bus_client.message import Message
-from ovos_plugin_manager.tts import OVOSTTSFactory, TTS
+from ovos_plugin_manager.tts import TTS
 
 
 class UtteranceTests:
@@ -49,7 +50,7 @@ class UtteranceTests:
         self.core_bus.run_in_thread()
         self.lang = lang
         self.test_audio = audio
-        self._tts = tts or OVOSTTSFactory.create() if audio else None
+        self._tts = tts
         # TODO: Handle prompt metadata for longer timeouts
         self._prompts = prompts
         self._stt_timeout = 60
@@ -151,15 +152,24 @@ class UtteranceTests:
                    "username": "minerva",
                    "user_profiles": [self._user_config]}
         if self.test_audio:
-            _, file_path = mkstemp()
-            audio, _ = self._tts.get_tts(prompt, file_path, lang=self.lang)
+            if self._tts:
+                _, file_path = mkstemp()
+                audio, _ = self._tts.get_tts(prompt, file_path, lang=self.lang)
+            else:
+                resp = self.core_bus.wait_for_response(
+                    Message("neon.get_tts", {'text': prompt,
+                                             'speaker': {'language': self.lang,
+                                                         'gender': 'female'}}),
+                    timeout=self._stt_timeout)
+                file_path = resp.data[self.lang]['female']
             resp = self.core_bus.wait_for_response(
                 Message("neon.audio_input",
                         {"audio_data": encode_file_to_base64_string(file_path),
                          "lang": self.lang}, context),
                 timeout=self._stt_timeout)
             LOG.info(resp.data)
-            if prompt not in resp.data['transcripts']:
+            if prompt.lower() not in (t.lower() for t
+                                      in resp.data['transcripts']):
                 LOG.warning(f"Invalid transcription for '{prompt}': "
                             f"{resp.data['transcripts']}")
         else:
