@@ -24,10 +24,10 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import json
 import os
 import click
 
-from pprint import pformat
 from os.path import expanduser, relpath, isfile, isdir
 from click_default_group import DefaultGroup
 from unittest.runner import TextTestRunner
@@ -147,4 +147,4 @@ def test_utterances(lang, audio, test_file):
     click.echo(f"Testing {len(prompts)} prompts")
     runner = UtteranceTests(prompts, lang=lang, audio=audio)
     results = runner.run_test()
-    click.echo(pformat(results))
+    click.echo(json.dumps(results, indent=2))
