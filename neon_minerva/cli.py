@@ -23,9 +23,10 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import logging
+
 import os
 import click
+import yaml
 
 from os.path import expanduser, relpath, isfile, isdir
 from click_default_group import DefaultGroup
@@ -52,6 +53,7 @@ def _init_tests(debug: bool = False):
 
     if debug:
         os.environ["OVOS_DEFAULT_LOG_LEVEL"] = "DEBUG"
+
 
 def _get_test_file(test_file: str) -> str:
     """
@@ -128,3 +130,21 @@ def test_intents(skill_entrypoint, test_file, debug, padacioso):
     os.environ["INTENT_TEST_FILE"] = test_file
     from neon_minerva.tests.test_skill_intents import TestSkillIntentMatching
     TextTestRunner().run(makeSuite(TestSkillIntentMatching))
+
+
+@neon_minerva_cli.command
+@click.option('-l', '--lang', default="en-us",
+              help="Language of test_file inputs")
+@click.option('-a', '--audio', is_flag=True, default=False,
+              help="Test input as audio")
+@click.argument("test_file")
+def test_utterances(lang, audio, test_file):
+    from neon_utils.file_utils import load_commented_file
+    from neon_minerva.integration.user_utterance import UtteranceTests
+
+    test_file = _get_test_file(test_file)
+    prompts = load_commented_file(test_file).split('\n')
+    click.echo(f"Testing {len(prompts)} prompts")
+    runner = UtteranceTests(prompts, lang=lang, audio=audio)
+    results = runner.run_test()
+    click.echo(yaml.safe_dump(results))
