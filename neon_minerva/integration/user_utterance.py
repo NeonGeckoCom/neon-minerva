@@ -93,9 +93,10 @@ class UtteranceTests:
                 LOG.error(result)
         formatted_results = dict()
         for key, values in aggregated_results.items():
-            formatted_results[key] = {"average": sum(values) / len(values),
-                                      "minimum": min(values),
-                                      "maximum": max(values)}
+            formatted_results[key] = {"average": round(sum(values) /
+                                                       len(values), 3),
+                                      "minimum": round(min(values), 3),
+                                      "maximum": round(max(values), 3)}
         return formatted_results
 
     def register_bus_events(self):
