@@ -114,6 +114,7 @@ class UtteranceTests:
         Handle audio output finished
         @param message: Message associated with completed audio playback
         """
+        LOG.debug("audio finished")
         self._last_message = message
         self._audio_output_done.set()
 
@@ -122,13 +123,15 @@ class UtteranceTests:
         Handle start listening (for prompts that trigger `get_response`)
         @param message: Message associated with completed skill handler
         """
-        self._last_message = message
+        LOG.debug("`get_response` call")
+        # self._last_message = message
         self._prompt_handled.set()
 
     def _handler_complete(self, _):
         """
         Handle skill execution complete (audio output may not be complete)
         """
+        LOG.debug("Skill Handler Complete")
         self._prompt_handled.set()
 
     def send_prompt(self, prompt: str):
