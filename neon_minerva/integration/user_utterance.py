@@ -53,9 +53,9 @@ class UtteranceTests:
         self._tts = tts
         # TODO: Handle prompt metadata for longer timeouts
         self._prompts = prompts
-        self._stt_timeout = 60
-        self._intent_timeout = 30
-        self._speak_timeout = 60
+        self._stt_timeout = 60     # Time to transcribe + audio parsers
+        self._intent_timeout = 60  # Time to match AND handle intent
+        self._speak_timeout = 60   # Time after intent handling for TTS playback
 
         self._results = list()
         self._audio_output_done = Event()
