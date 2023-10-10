@@ -32,13 +32,13 @@ from neon_utils.file_utils import encode_file_to_base64_string
 from ovos_utils.log import LOG
 from ovos_bus_client.client import MessageBusClient
 from ovos_bus_client.message import Message
-from ovos_plugin_manager.tts import OVOSTTSFactory
+from ovos_plugin_manager.tts import OVOSTTSFactory, TTS
 
 
 class UtteranceTests:
     def __init__(self, prompts: List[str], lang: str = "en-us",
                  bus_config: dict = None, user_config: dict = None,
-                 audio: bool = False):
+                 audio: bool = False, tts: TTS = None):
         if not user_config:
             from neon_utils.configuration_utils import get_neon_user_config
             user_config = get_neon_user_config().content
@@ -49,7 +49,7 @@ class UtteranceTests:
         self.core_bus.run_in_thread()
         self.lang = lang
         self.test_audio = audio
-        self._tts = OVOSTTSFactory.create() if audio else None
+        self._tts = tts or OVOSTTSFactory.create() if audio else None
         # TODO: Handle prompt metadata for longer timeouts
         self._prompts = prompts
         self._stt_timeout = 60
@@ -66,6 +66,9 @@ class UtteranceTests:
         self.register_bus_events()
 
     def run_test(self) -> dict:
+        """
+        Run tests and return dict timing results
+        """
         self._results.clear()
         for prompt in self._prompts:
             self.handle_prompt(prompt)
@@ -95,6 +98,9 @@ class UtteranceTests:
         return formatted_results
 
     def register_bus_events(self):
+        """
+        Register listeners to track audio and skill module states
+        """
         self.core_bus.on("recognizer_loop:audio_output_start",
                          self._audio_started)
         self.core_bus.on("recognizer_loop:audio_output_end",
@@ -162,6 +168,11 @@ class UtteranceTests:
                                         "lang": self.lang}, context))
 
     def handle_prompt(self, prompt: str):
+        """
+        Send a prompt (text or audio) and collect timing results.
+        @param prompt: string prompt to send for intent (and optionally STT)
+            processing
+        """
         with self._prompt_lock:
             # Ensure event state matches expectation
             if not self._audio_output_done.is_set():
