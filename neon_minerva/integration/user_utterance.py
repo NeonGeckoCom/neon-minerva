@@ -199,6 +199,10 @@ class UtteranceTests:
                 assert self._prompt_handled.wait(self._intent_timeout)
                 assert self._audio_output_done.wait(self._speak_timeout)
                 assert self._last_message is not None
+                if "speech_start" not in self._last_message.context["timing"]:
+                    LOG.warning(f"Missing speech_start timestamp for {prompt}")
+                    self._last_message.context["timing"]["speech_start"] = \
+                        self._last_message.context["timing"]["handle_utterance"]
                 self._results.append({**self._last_message.context["timing"],
                                       **{'finished': time()}})
             except AssertionError as e:
