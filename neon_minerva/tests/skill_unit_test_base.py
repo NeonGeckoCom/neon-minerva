@@ -49,7 +49,7 @@ class SkillTestCase(unittest.TestCase):
     skill_entrypoint = getenv("TEST_SKILL_ENTRYPOINT")
     if not skill_entrypoint:
         from ovos_plugin_manager.skills import find_skill_plugins
-        skill_entrypoints = find_skill_plugins().keys()
+        skill_entrypoints = list(find_skill_plugins().keys())
         assert len(skill_entrypoints) == 1
         skill_entrypoint = skill_entrypoints[0]
 
