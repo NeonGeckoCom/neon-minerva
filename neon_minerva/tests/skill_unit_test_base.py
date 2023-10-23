@@ -36,7 +36,7 @@ from ovos_utils.messagebus import FakeBus
 from neon_minerva.skill import get_skill_object
 
 
-class TestSkill(unittest.TestCase):
+class SkillTestCase(unittest.TestCase):
     # Define test directories
     test_fs = join(dirname(__file__), "skill_fs")
     data_dir = join(test_fs, "data")
