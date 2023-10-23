@@ -45,23 +45,28 @@ class SkillTestCase(unittest.TestCase):
     environ["XDG_DATA_HOME"] = data_dir
     environ["XDG_CONFIG_HOME"] = conf_dir
 
-    # Get test skill
-    skill_entrypoint = getenv("TEST_SKILL_ENTRYPOINT")
-    if not skill_entrypoint:
-        from ovos_plugin_manager.skills import find_skill_plugins
-        skill_entrypoints = list(find_skill_plugins().keys())
-        assert len(skill_entrypoints) == 1
-        skill_entrypoint = skill_entrypoints[0]
-
+    # Define static parameters
     bus = FakeBus()
     bus.run_forever()
     test_skill_id = 'test_skill.test'
 
-    skill = get_skill_object(skill_entrypoint=skill_entrypoint,
-                             skill_id=test_skill_id, bus=bus)
-    # Override speak and speak_dialog to test passed arguments
-    skill.speak = Mock()
-    skill.speak_dialog = Mock()
+    skill = None
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        # Get test skill
+        skill_entrypoint = getenv("TEST_SKILL_ENTRYPOINT")
+        if not skill_entrypoint:
+            from ovos_plugin_manager.skills import find_skill_plugins
+            skill_entrypoints = list(find_skill_plugins().keys())
+            assert len(skill_entrypoints) == 1
+            skill_entrypoint = skill_entrypoints[0]
+
+        cls.skill = get_skill_object(skill_entrypoint=skill_entrypoint,
+                                     skill_id=cls.test_skill_id, bus=cls.bus)
+        # Override speak and speak_dialog to test passed arguments
+        cls.skill.speak = Mock()
+        cls.skill.speak_dialog = Mock()
 
     def setUp(self):
         self.skill.speak.reset_mock()
