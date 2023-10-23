@@ -27,10 +27,11 @@
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import unittest
+import shutil
 
 from os import environ, getenv
 from os.path import dirname, join
-from mock import Mock
+from unittest.mock import Mock
 from ovos_utils.messagebus import FakeBus
 
 from neon_minerva.skill import get_skill_object
@@ -53,13 +54,14 @@ class SkillTestCase(unittest.TestCase):
 
     skill = get_skill_object(skill_entrypoint=skill_entrypoint,
                              skill_id=test_skill_id, bus=bus)
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        # Override speak and speak_dialog to test passed arguments
-        cls.skill.speak = Mock()
-        cls.skill.speak_dialog = Mock()
+    # Override speak and speak_dialog to test passed arguments
+    skill.speak = Mock()
+    skill.speak_dialog = Mock()
 
     def setUp(self):
         self.skill.speak.reset_mock()
         self.skill.speak_dialog.reset_mock()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        shutil.rmtree(cls.test_fs)
