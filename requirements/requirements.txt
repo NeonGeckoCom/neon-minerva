@@ -5,4 +5,5 @@ ovos-workshop~=0.0.12
 fann2==1.0.7
 padatious~=0.4.8
 padacioso~=0.1
-pyyaml~=6.0
+pyyaml>=5.4,<7.0
+# PyYaml 5.4 support left for ovos-core 0.0.7 compat
