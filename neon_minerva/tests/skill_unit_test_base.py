@@ -47,6 +47,9 @@ class SkillTestCase(unittest.TestCase):
 
     # Define static parameters
     bus = FakeBus()
+    # Patching FakeBus compat. with MessageBusClient
+    bus.emitter = bus.ee
+
     bus.run_forever()
     test_skill_id = 'test_skill.test'
 
