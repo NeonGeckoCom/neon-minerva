@@ -1,0 +1,2 @@
+klat-connector
+neon-chatbot-core
