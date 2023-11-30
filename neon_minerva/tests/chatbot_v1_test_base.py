@@ -29,16 +29,20 @@ from neon_minerva.chatbots.util import load_chatbot
 
 
 class TestSubmind(unittest.TestCase):
-    # Determine submind to test
-    submind_entrypoint = getenv("TEST_BOT_ENTRYPOINT")
-    bot_class = load_chatbot(submind_entrypoint)
     # Initialize a server for testing
     server = MachKlatServer()
     sleep(1)
     socket = start_socket("0.0.0.0")
-    # Initialize a submind instance
-    submind = bot_class(socket, "Private", "testrunner", "testpassword",
-                        on_server=False)
+    submind = None
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        # Determine submind to test
+        submind_entrypoint = getenv("TEST_BOT_ENTRYPOINT")
+        bot_class = load_chatbot(submind_entrypoint)
+        # Initialize a submind instance
+        cls.submind = bot_class(cls.socket, "Private", "testrunner",
+                                "testpassword", on_server=False)
 
     @classmethod
     def tearDownClass(cls) -> None:
