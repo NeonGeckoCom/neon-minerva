@@ -27,7 +27,6 @@
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import unittest
-import os
 import json
 
 from os import getenv
@@ -84,7 +83,8 @@ class TestSkillResources(unittest.TestCase):
         self.assertEqual(self.skill.skill_id, self.test_skill_id)
         self.assertEqual(set([self.skill._core_lang] +
                              self.skill._secondary_langs),
-                         set(self.supported_languages))
+                         set(self.supported_languages),
+                         f"expected={self.supported_languages}")
 
     def test_intent_registration(self):
         registered_adapt = list()
@@ -137,8 +137,9 @@ class TestSkillResources(unittest.TestCase):
 
     def test_dialog_files(self):
         for lang in self.supported_languages:
+            dialogs = self.skill._lang_resources[lang].dialog_renderer.templates
             for dialog in self.dialog:
-                file = self.skill.find_resource(f"{dialog}.dialog", "dialog",
-                                                lang)
-                self.assertIsInstance(file, str, f"{dialog} in {self.dialog}")
-                self.assertTrue(os.path.isfile(file), dialog)
+                self.assertIn(dialog, dialogs.keys(),
+                              f"lang={lang}")
+
+    # TODO: Consider adding tests for resource file existence
