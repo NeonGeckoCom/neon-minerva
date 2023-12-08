@@ -7,7 +7,7 @@ The `minerva` entrypoint is available to interact with a bus via CLI.
 Help is available via `minerva --help`.
 
 ## Installation
-Since skill intents may use Padatious, the following system packages must be 
+If testing Padatious intents, the following system packages must be 
 installed before installing this package:
 ```shell
 sudo apt install swig libfann-dev
@@ -15,6 +15,11 @@ sudo apt install swig libfann-dev
 To install this package from PyPI, simply run:
 ```shell
 pip install neon-minerva
+```
+
+If testing with Padatious, install with the `padatious` extras:
+```shell
+pip install neon-minerva[padatious]
 ```
 
 ## Usage
@@ -60,3 +65,30 @@ class MySkillTest(SkillTestCase):
 
 Be sure to review the base class for mocked methods and test paths as these may
 change in the future.
+
+### Chatbot Unit Tests
+`neon_minerva.chatbots` contains mocked data for testing as well as some utility
+methods. `neon_minerva.tests.chatbot_v1_test_base` provides `TestSubmind` which
+may be extended to test a submind bot in a mocked v1 environment. For example:
+
+```python
+from os import environ
+from datetime import datetime
+from chatbot_core.utils.enum import ConversationState
+
+from neon_minerva.tests.chatbot_v1_test_base import TestSubmind
+from neon_minerva.chatbots.test_constants import PROMPT, RESPONSES
+
+environ["TEST_BOT_ENTRYPOINT"] = "tester"
+
+
+class TestTester(TestSubmind):
+    def test_submind_chatbot(self):
+        self.submind.state = ConversationState.RESP
+        response = self.submind.ask_chatbot("testrunner", PROMPT,
+                                            datetime.now().strftime(
+                                                "%I:%M:%S %p"))
+        self.assertIsInstance(response, str)
+        self.assertIsNotNone(response)
+```
+> Make sure to install the `chatbots` extra to use this test case

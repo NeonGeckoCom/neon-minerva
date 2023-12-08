@@ -26,7 +26,6 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from padatious import IntentContainer
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import FakeBus
 
@@ -36,6 +35,7 @@ from neon_minerva.intent_services import IntentMatch
 
 class PadatiousContainer:
     def __init__(self, lang: str, cache_path: str, bus: FakeBus):
+        from padatious import IntentContainer
         self.cache_dir = cache_path
         self.lang = lang.lower()
         self.bus = bus
