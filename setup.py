@@ -74,7 +74,8 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=get_requirements("requirements.txt"),
-    extras_require={"chatbots": get_requirements("chatbots.txt")},
+    extras_require={"chatbots": get_requirements("chatbots.txt"),
+                    "padatious": get_requirements("padatious.txt")},
     entry_points={
         'console_scripts': ['minerva=neon_minerva.cli:neon_minerva_cli']
     }

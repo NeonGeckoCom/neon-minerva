@@ -62,7 +62,18 @@ class TestSkillIntentMatching(unittest.TestCase):
     if getenv("TEST_PADACIOSO") == "true":
         container = PadaciosoContainer
     else:
-        container = PadatiousContainer
+        try:
+            from padatious import IntentContainer
+            container = PadatiousContainer
+        except ImportError as e:
+            LOG.error(f"Padatious not installed. Install "
+                      f"neon-minerva[padatious] to get Padatious requirements")
+            if getenv("TEST_PADACIOSO") is None:
+                # Ambiguous request, just use Padacioso
+                container = PadaciosoContainer
+            else:
+                # Explicitly requested Padatious/non-Padacioso
+                raise e
     padatious_services = dict()
     adapt_services = dict()
     for lang in languages:

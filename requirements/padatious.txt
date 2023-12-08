@@ -1,0 +1,2 @@
+padatious~=0.4.8
+fann2==1.0.7
