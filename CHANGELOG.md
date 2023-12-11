@@ -1,16 +1,24 @@
 # Changelog
 
-## [0.0.1](https://github.com/NeonGeckoCom/neon-minerva/tree/0.0.1) (2023-10-26)
+## [0.0.2a6](https://github.com/NeonGeckoCom/neon-minerva/tree/0.0.2a6) (2023-12-08)
 
-[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/1f81d6670a144b65069a882623ff3ef44ae93582...0.0.1)
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.0.2a5...0.0.2a6)
 
 **Merged pull requests:**
 
-- Update GitHub release automation [\#7](https://github.com/NeonGeckoCom/neon-minerva/pull/7) ([NeonDaniel](https://github.com/NeonDaniel))
-- Update GitHub release automation [\#6](https://github.com/NeonGeckoCom/neon-minerva/pull/6) ([NeonDaniel](https://github.com/NeonDaniel))
-- Loosen padacioso dependency spec for neon-core compat. [\#4](https://github.com/NeonGeckoCom/neon-minerva/pull/4) ([NeonDaniel](https://github.com/NeonDaniel))
-- Add integration tests [\#3](https://github.com/NeonGeckoCom/neon-minerva/pull/3) ([NeonDaniel](https://github.com/NeonDaniel))
-- Initial implementation of portable skill tests [\#1](https://github.com/NeonGeckoCom/neon-minerva/pull/1) ([NeonDaniel](https://github.com/NeonDaniel))
+- Move packages with system dependencies to `padatious` extras [\#13](https://github.com/NeonGeckoCom/neon-minerva/pull/13) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [0.0.2a5](https://github.com/NeonGeckoCom/neon-minerva/tree/0.0.2a5) (2023-12-08)
+
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.0.1...0.0.2a5)
+
+**Merged pull requests:**
+
+- Update GHA to publish pre-releases [\#12](https://github.com/NeonGeckoCom/neon-minerva/pull/12) ([NeonDaniel](https://github.com/NeonDaniel))
+- Fix bug causing dialog tests to pass when translations are missing [\#11](https://github.com/NeonGeckoCom/neon-minerva/pull/11) ([NeonDaniel](https://github.com/NeonDaniel))
+- Add support for CBF Submind tests [\#10](https://github.com/NeonGeckoCom/neon-minerva/pull/10) ([NeonDaniel](https://github.com/NeonDaniel))
+- Add compat. reference for `bus.emitter` [\#9](https://github.com/NeonGeckoCom/neon-minerva/pull/9) ([NeonDaniel](https://github.com/NeonDaniel))
+- Skill Test Class [\#5](https://github.com/NeonGeckoCom/neon-minerva/pull/5) ([NeonDaniel](https://github.com/NeonDaniel))
 
 
 

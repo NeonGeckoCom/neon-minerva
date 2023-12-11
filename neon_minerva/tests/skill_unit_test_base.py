@@ -26,57 +26,55 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import setuptools
+import unittest
+import shutil
 
-from os import path
+from os import environ, getenv
+from os.path import dirname, join
+from unittest.mock import Mock
+from ovos_utils.messagebus import FakeBus
 
-
-BASE_PATH = path.abspath(path.dirname(__file__))
-
-
-def get_requirements(requirements_filename: str):
-    requirements_file = path.join(BASE_PATH, "requirements",
-                                  requirements_filename)
-    with open(requirements_file, 'r', encoding='utf-8') as r:
-        requirements = r.readlines()
-    requirements = [r.strip() for r in requirements if r.strip() and
-                    not r.strip().startswith("#")]
-    return requirements
+from neon_minerva.skill import get_skill_object
 
 
-with open(path.join(BASE_PATH, "README.md"), "r") as f:
-    long_description = f.read()
+class SkillTestCase(unittest.TestCase):
+    # Define test directories
+    test_fs = join(dirname(__file__), "skill_fs")
+    data_dir = join(test_fs, "data")
+    conf_dir = join(test_fs, "config")
+    environ["XDG_DATA_HOME"] = data_dir
+    environ["XDG_CONFIG_HOME"] = conf_dir
 
-with open(path.join(BASE_PATH, "neon_minerva", "version.py"),
-          "r", encoding="utf-8") as v:
-    for line in v.readlines():
-        if line.startswith("__version__"):
-            if '"' in line:
-                version = line.split('"')[1]
-            else:
-                version = line.split("'")[1]
+    # Define static parameters
+    bus = FakeBus()
+    # Patching FakeBus compat. with MessageBusClient
+    bus.emitter = bus.ee
 
-setuptools.setup(
-    name="neon-minerva",
-    version=version,
-    author='Neongecko',
-    author_email='developers@neon.ai',
-    license='BSD-3-Clause',
-    description="Modular INtelligent Evaluation for a Reliable Voice Assistant",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url="https://github.com/neongeckocom/neon-minerva",
-    packages=setuptools.find_packages(),
-    include_package_data=True,
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "Operating System :: OS Independent"
-    ],
-    python_requires='>=3.6',
-    install_requires=get_requirements("requirements.txt"),
-    extras_require={"chatbots": get_requirements("chatbots.txt"),
-                    "padatious": get_requirements("padatious.txt")},
-    entry_points={
-        'console_scripts': ['minerva=neon_minerva.cli:neon_minerva_cli']
-    }
-)
+    bus.run_forever()
+    test_skill_id = 'test_skill.test'
+
+    skill = None
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        # Get test skill
+        skill_entrypoint = getenv("TEST_SKILL_ENTRYPOINT")
+        if not skill_entrypoint:
+            from ovos_plugin_manager.skills import find_skill_plugins
+            skill_entrypoints = list(find_skill_plugins().keys())
+            assert len(skill_entrypoints) == 1
+            skill_entrypoint = skill_entrypoints[0]
+
+        cls.skill = get_skill_object(skill_entrypoint=skill_entrypoint,
+                                     skill_id=cls.test_skill_id, bus=cls.bus)
+        # Override speak and speak_dialog to test passed arguments
+        cls.skill.speak = Mock()
+        cls.skill.speak_dialog = Mock()
+
+    def setUp(self):
+        self.skill.speak.reset_mock()
+        self.skill.speak_dialog.reset_mock()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        shutil.rmtree(cls.test_fs)

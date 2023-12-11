@@ -40,11 +40,14 @@ def get_skill_object(skill_entrypoint: str, bus: FakeBus,
     @param skill_entrypoint: Skill plugin entrypoint or directory path
     @param bus: FakeBus instance to bind to skill for testing
     @param skill_id: skill_id to initialize skill with
+    @param config_patch: Configuration update to apply
     @returns: Initialized skill object
     """
     if config_patch:
-        from ovos_config.config import update_mycroft_config
-        update_mycroft_config(config_patch)
+        from ovos_config.config import update_mycroft_config, Configuration
+        user_config = update_mycroft_config(config_patch)
+        if user_config not in Configuration.xdg_configs:
+            Configuration.xdg_configs.append(user_config)
     if isdir(skill_entrypoint):
         LOG.info(f"Loading local skill: {skill_entrypoint}")
         from ovos_workshop.skill_launcher import SkillLoader
