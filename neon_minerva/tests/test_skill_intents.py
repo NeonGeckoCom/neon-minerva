@@ -30,6 +30,9 @@ import unittest
 
 from os import getenv
 from os.path import join, exists
+from unittest.mock import Mock
+
+from ovos_bus_client import Message
 from ovos_utils.messagebus import FakeBus
 from ovos_utils.log import LOG
 
@@ -38,6 +41,7 @@ from neon_minerva.skill import get_skill_object, load_intent_tests
 from neon_minerva.intent_services.padatious import PadatiousContainer, TestPadatiousMatcher
 from neon_minerva.intent_services.adapt import AdaptContainer
 from neon_minerva.intent_services.padacioso import PadaciosoContainer
+from neon_minerva.intent_services.common_query import CommonQuery
 from neon_minerva.intent_services import IntentMatch
 
 
@@ -80,6 +84,9 @@ class TestSkillIntentMatching(unittest.TestCase):
         padatious_services[lang] = container(lang, join(padatious_cache, lang),
                                              bus)
         adapt_services[lang] = AdaptContainer(lang, bus)
+
+    if common_query:
+        common_query_service = CommonQuery(bus)
 
     skill = get_skill_object(skill_entrypoint=skill_entrypoint,
                              skill_id=test_skill_id, bus=bus,
@@ -148,8 +155,50 @@ class TestSkillIntentMatching(unittest.TestCase):
                     padatious.test_intent(utt)
 
     def test_common_query(self):
-        # TODO
-        pass
+        if not self.common_query:
+            return
+
+        qa_callback = Mock()
+        qa_response = Mock()
+        self.skill.events.add('question:action', qa_callback)
+        self.skill.events.add('question:query.response', qa_response)
+        for lang in self.common_query.keys():
+            for utt in self.common_query[lang]:
+                if isinstance(utt, dict):
+                    data = list(utt.values())[0]
+                    utt = list(utt.keys())[0]
+                else:
+                    data = dict()
+                message = Message('test_utterance',
+                                  {"utterances": [utt], "lang": lang})
+                self.common_query_service.handle_question(message)
+                response = qa_response.call_args[0][0]
+                callback = qa_response.call_args[0][0]
+                self.assertIsInstance(response, Message)
+                self.assertTrue(response.data["phrase"] in utt)
+                self.assertEqual(response.data["skill_id"], self.skill.skill_id)
+                self.assertIn("callback_data", response.data.keys())
+                self.assertIsInstance(response.data["conf"], float)
+                self.assertIsInstance(response.data["answer"], str)
+
+                self.assertIsInstance(callback, Message)
+                self.assertEqual(callback.data['skill_id'], self.skill.skill_id)
+                self.assertEqual(callback.data['phrase'],
+                                 response.data['phrase'])
+                if not data:
+                    continue
+                if isinstance(data.get('callback'), dict):
+                    self.assertEqual(callback.data['callback_data'],
+                                     data['callback'])
+                elif isinstance(data.get('callback'), list):
+                    self.assertEqual(set(callback.data['callback_data'].keys()),
+                                     set(data.get('callback')))
+                if data.get('min_confidence'):
+                    self.assertGreaterEqual(response.data['conf'],
+                                            data['min_confidence'])
+                if data.get('max_confidence'):
+                    self.assertLessEqual(response.data['conf'],
+                                         data['max_confidence'])
 
     def test_common_play(self):
         # TODO
