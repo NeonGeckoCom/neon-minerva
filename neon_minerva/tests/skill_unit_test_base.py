@@ -31,6 +31,7 @@ import shutil
 
 from os import environ, getenv
 from os.path import dirname, join
+from threading import Event
 from unittest.mock import Mock
 from ovos_utils.messagebus import FakeBus
 
@@ -49,6 +50,8 @@ class SkillTestCase(unittest.TestCase):
     bus = FakeBus()
     # Patching FakeBus compat. with MessageBusClient
     bus.emitter = bus.ee
+    bus.connected_event = Event()
+    bus.connected_event.set()
 
     bus.run_forever()
     test_skill_id = 'test_skill.test'
