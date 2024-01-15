@@ -119,7 +119,7 @@ class TestSkillIntentMatching(unittest.TestCase):
                         utt = list(utt.keys())[0]
                     else:
                         data = list()
-
+                    utt = utt.lower()
                     match = parser.test_intent(utt)
                     self.assertIsInstance(match, IntentMatch)
                     self.assertEqual(match.skill_id, self.test_skill_id)
@@ -169,8 +169,9 @@ class TestSkillIntentMatching(unittest.TestCase):
                     utt = list(utt.keys())[0]
                 else:
                     data = dict()
+                utt = utt.lower()
                 message = Message('test_utterance',
-                                  {"utterances": [utt], "lang": lang})
+                                  {"utterance": utt, "lang": lang})
                 self.common_query_service.handle_question(message)
                 response = qa_response.call_args[0][0]
                 callback = qa_response.call_args[0][0]
