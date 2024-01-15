@@ -109,7 +109,10 @@ class TestSkillIntentMatching(unittest.TestCase):
             for intent, examples in self.valid_intents[lang].items():
                 # TODO: Better method to determine parser?
                 if intent.endswith('.intent'):
-                    parser = TestPadatiousMatcher(self.padatious_services[lang])
+                    # TODO: Configurable min confidence
+                    parser = TestPadatiousMatcher(self.padatious_services[lang],
+                                                  include_med=True,
+                                                  include_low=True)
                 else:
                     parser = self.adapt_services[lang]
 
