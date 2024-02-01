@@ -1,24 +1,44 @@
 # Changelog
 
-## [0.0.2a6](https://github.com/NeonGeckoCom/neon-minerva/tree/0.0.2a6) (2023-12-08)
+## [0.1.1a6](https://github.com/NeonGeckoCom/neon-minerva/tree/0.1.1a6) (2024-02-01)
 
-[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.0.2a5...0.0.2a6)
-
-**Merged pull requests:**
-
-- Move packages with system dependencies to `padatious` extras [\#13](https://github.com/NeonGeckoCom/neon-minerva/pull/13) ([NeonDaniel](https://github.com/NeonDaniel))
-
-## [0.0.2a5](https://github.com/NeonGeckoCom/neon-minerva/tree/0.0.2a5) (2023-12-08)
-
-[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.0.1...0.0.2a5)
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.1.1a5...0.1.1a6)
 
 **Merged pull requests:**
 
-- Update GHA to publish pre-releases [\#12](https://github.com/NeonGeckoCom/neon-minerva/pull/12) ([NeonDaniel](https://github.com/NeonDaniel))
-- Fix bug causing dialog tests to pass when translations are missing [\#11](https://github.com/NeonGeckoCom/neon-minerva/pull/11) ([NeonDaniel](https://github.com/NeonDaniel))
-- Add support for CBF Submind tests [\#10](https://github.com/NeonGeckoCom/neon-minerva/pull/10) ([NeonDaniel](https://github.com/NeonDaniel))
-- Add compat. reference for `bus.emitter` [\#9](https://github.com/NeonGeckoCom/neon-minerva/pull/9) ([NeonDaniel](https://github.com/NeonDaniel))
-- Skill Test Class [\#5](https://github.com/NeonGeckoCom/neon-minerva/pull/5) ([NeonDaniel](https://github.com/NeonDaniel))
+- Document skill tests and update ovos-utils dependency spec [\#19](https://github.com/NeonGeckoCom/neon-minerva/pull/19) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [0.1.1a5](https://github.com/NeonGeckoCom/neon-minerva/tree/0.1.1a5) (2024-01-15)
+
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.1.1a4...0.1.1a5)
+
+**Merged pull requests:**
+
+- Utterance handling bugfixes [\#18](https://github.com/NeonGeckoCom/neon-minerva/pull/18) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [0.1.1a4](https://github.com/NeonGeckoCom/neon-minerva/tree/0.1.1a4) (2024-01-15)
+
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.1.1a3...0.1.1a4)
+
+**Merged pull requests:**
+
+- Patch FakeBus object for MessageBusClient compat. [\#17](https://github.com/NeonGeckoCom/neon-minerva/pull/17) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [0.1.1a3](https://github.com/NeonGeckoCom/neon-minerva/tree/0.1.1a3) (2024-01-15)
+
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.1.1a2...0.1.1a3)
+
+**Merged pull requests:**
+
+- Add CommonQuery test support [\#16](https://github.com/NeonGeckoCom/neon-minerva/pull/16) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [0.1.1a2](https://github.com/NeonGeckoCom/neon-minerva/tree/0.1.1a2) (2024-01-02)
+
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.1.0...0.1.1a2)
+
+**Merged pull requests:**
+
+- Make skill references compatible with ovos-workshop changes [\#15](https://github.com/NeonGeckoCom/neon-minerva/pull/15) ([NeonDaniel](https://github.com/NeonDaniel))
 
 
 
