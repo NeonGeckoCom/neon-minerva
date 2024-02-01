@@ -34,6 +34,39 @@ To test that skill resources are defined for all supported languages,
     the skill's root directory 
 > - <test-file\> is a relative or absolute path to the resource test file, usually `test_resources.yaml`
 
+example `test_resources.yaml`:
+```yaml
+# Specify resources to test here.
+
+# Specify languages to be tested
+languages:
+  - "en-us"
+  - "uk-ua"
+
+# vocab is lowercase .voc file basenames
+vocab:
+  - ip
+  - public
+  - query
+
+# dialog is .dialog file basenames (case-sensitive)
+dialog:
+  - dot
+  - my address is
+  - my address on X is Y
+  - no network connection
+  - word_public
+  - word_local
+# regex entities, not necessarily filenames
+regex: []
+intents:
+  # Padatious intents are the `.intent` file names
+  padatious: []
+  # Adapt intents are the name passed to the constructor
+  adapt:
+    - IPIntent
+```
+
 ### Intent Tests
 To test that skill intents match as expected for all supported languages,
 `minerva test-intents <skill-entrypoint> <test-file>`
@@ -41,6 +74,38 @@ To test that skill intents match as expected for all supported languages,
     the skill's root directory 
 > - <test-file\> is a relative or absolute path to the resource test file, usually `test_intents.yaml`
 > - The `--padacioso` flag can be added to test with Padacioso instead of Padatious for relevant intents
+
+example `test_intents.yaml`:
+```yaml
+en-us:
+  IPIntent:
+  - what is your ip address
+  - what is my ip address:
+    - IP
+  - what is my i.p. address
+  - What is your I.P. address?
+  - what is my public IP address?:
+    - public: public
+
+uk-ua:
+  IPIntent:
+  - шо в мене за ай пі:
+    - IP  
+  - покажи яка в мене за мережа:
+    - IP
+  - покажи яка в мене публічний ай пі адреса:
+    - public: публічний
+```
+
+#### Test Configuration
+The following top-level sections can be added to intent test configuration:
+
+- `unmatched intents`: dict of `lang` to list of `utterances` that should match 
+  no intents. Note that this does not test for CommonQuery or CommonPlay matches.
+- `common query`: dict of `lang` to list of `utterances` OR dict of `utterances`
+  to expected: `callback_data` (list keys or dict data), `min_confidence`, and
+  `max_confidence`
+- `common play`: TBD
 
 ## Advanced Usage
 In addition to convenient CLI methods, this package also provides test cases that
