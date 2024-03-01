@@ -81,8 +81,8 @@ class TestSkillResources(unittest.TestCase):
 
     def test_skill_setup(self):
         self.assertEqual(self.skill.skill_id, self.test_skill_id)
-        self.assertEqual(set([self.skill._core_lang] +
-                             self.skill._secondary_langs),
+        self.assertEqual(set([self.skill.core_lang] +
+                             self.skill.secondary_langs),
                          set(self.supported_languages),
                          f"expected={self.supported_languages}")
 

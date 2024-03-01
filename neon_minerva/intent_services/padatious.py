@@ -94,9 +94,9 @@ class TestPadatiousMatcher:
             raise IntentNotMatched(utterance)
         conf = intent.get("conf") or 0.0
         if conf < self.min_conf:
-            raise ConfidenceTooLow(f"{conf} less than minimum {self.min_conf}")
+            raise ConfidenceTooLow(f"{conf} less than minimum {self.min_conf}: "
+                                   f"{utterance}. intent={intent}")
         skill_id = intent.get('name').split(':')[0]
-        sentence = ' '.join(intent.get('sent')) if intent.get('sent') else utterance
         return IntentMatch('Padatious', intent.get('name'),
                            intent.get('matches') or intent.get('entities'),
-                           skill_id, sentence)
+                           skill_id, utterance)
