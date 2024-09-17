@@ -28,7 +28,7 @@
 
 from typing import Optional
 from adapt.engine import IntentDeterminationEngine
-from ovos_utils.intents.intent_service_interface import open_intent_envelope
+from ovos_workshop.intents import open_intent_envelope
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import FakeBus, get_message_lang
 
