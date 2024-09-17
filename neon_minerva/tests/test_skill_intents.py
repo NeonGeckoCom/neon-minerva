@@ -93,6 +93,11 @@ class TestSkillIntentMatching(unittest.TestCase):
                              config_patch=core_config_patch)
 
     @classmethod
+    def setUpClass(cls):
+        # Default respond "no" to any yes/no prompts
+        cls.skill.ask_yesno = Mock(return_value="no")
+
+    @classmethod
     def tearDownClass(cls) -> None:
         import shutil
         for service in cls.padatious_services.values():
@@ -168,41 +173,42 @@ class TestSkillIntentMatching(unittest.TestCase):
         for lang in self.common_query.keys():
             for utt in self.common_query[lang]:
                 if isinstance(utt, dict):
-                    data = list(utt.values())[0]
+                    cqs_data = list(utt.values())[0]
                     utt = list(utt.keys())[0]
                 else:
-                    data = dict()
+                    cqs_data = dict()
                 utt = utt.lower()
                 message = Message('test_utterance',
                                   {"utterance": utt, "lang": lang})
                 self.common_query_service.handle_question(message)
-                response = qa_response.call_args[0][0]
-                callback = qa_response.call_args[0][0]
-                self.assertIsInstance(response, Message)
-                self.assertTrue(response.data["phrase"] in utt)
-                self.assertEqual(response.data["skill_id"], self.skill.skill_id)
-                self.assertIn("callback_data", response.data.keys())
-                self.assertIsInstance(response.data["conf"], float)
-                self.assertIsInstance(response.data["answer"], str)
+                response_msg = qa_response.call_args[0][0]
+                callback_msg = qa_response.call_args[0][0]
+                self.assertIsInstance(response_msg, Message)
+                self.assertTrue(response_msg.data["phrase"] in utt)
+                self.assertEqual(response_msg.data["skill_id"], self.skill.skill_id)
+                self.assertIn("callback_data", response_msg.data.keys())
+                self.assertIsInstance(response_msg.data["conf"], float)
+                self.assertIsInstance(response_msg.data["answer"], str)
 
-                self.assertIsInstance(callback, Message)
-                self.assertEqual(callback.data['skill_id'], self.skill.skill_id)
-                self.assertEqual(callback.data['phrase'],
-                                 response.data['phrase'])
-                if not data:
+                self.assertIsInstance(callback_msg, Message)
+                self.assertEqual(callback_msg.data['skill_id'], self.skill.skill_id)
+                self.assertEqual(callback_msg.data['phrase'],
+                                 response_msg.data['phrase'])
+                if not cqs_data:
                     continue
-                if isinstance(data.get('callback'), dict):
-                    self.assertEqual(callback.data['callback_data'],
-                                     data['callback'])
-                elif isinstance(data.get('callback'), list):
-                    self.assertEqual(set(callback.data['callback_data'].keys()),
-                                     set(data.get('callback')))
-                if data.get('min_confidence'):
-                    self.assertGreaterEqual(response.data['conf'],
-                                            data['min_confidence'])
-                if data.get('max_confidence'):
-                    self.assertLessEqual(response.data['conf'],
-                                         data['max_confidence'])
+                if isinstance(cqs_data.get('callback'), dict):
+                    self.assertEqual(callback_msg.data['callback_data'],
+                                     cqs_data['callback'])
+                elif isinstance(cqs_data.get('callback'), list):
+                    # callback_data has `answer` but callback does not
+                    self.assertEqual(set(callback_msg.data['callback_data'].keys()),
+                                     set(cqs_data.get('callback') + ['answer']))
+                if cqs_data.get('min_confidence'):
+                    self.assertGreaterEqual(response_msg.data['conf'],
+                                            cqs_data['min_confidence'], utt)
+                if cqs_data.get('max_confidence'):
+                    self.assertLessEqual(response_msg.data['conf'],
+                                         cqs_data['max_confidence'], utt)
 
     def test_common_play(self):
         # TODO
