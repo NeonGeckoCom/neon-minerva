@@ -30,6 +30,7 @@ import unittest
 
 from os import getenv
 from os.path import join, exists
+from threading import Event
 from unittest.mock import Mock
 
 from ovos_bus_client import Message
@@ -57,10 +58,11 @@ class TestSkillIntentMatching(unittest.TestCase):
     skill_entrypoint = getenv("TEST_SKILL_ENTRYPOINT")
 
     # Populate configuration
-    languages = list(valid_intents.keys())
-    core_config_patch = {"secondary_langs": languages}
     negative_intents = valid_intents.pop('unmatched intents', dict())
     common_query = valid_intents.pop("common query", dict())
+    ready_event = valid_intents.pop("ready event")
+    languages = list(valid_intents.keys())
+    core_config_patch = {"secondary_langs": languages}
 
     # Define intent parsers for tests
     if getenv("TEST_PADACIOSO") == "true":
@@ -96,6 +98,10 @@ class TestSkillIntentMatching(unittest.TestCase):
     def setUpClass(cls):
         # Default respond "no" to any yes/no prompts
         cls.skill.ask_yesno = Mock(return_value="no")
+        if cls.ready_event and hasattr(cls.skill, cls.ready_event):
+            print("Configured ready event to wait for")
+            event: Event = getattr(cls.skill, cls.ready_event)
+            event.wait()
 
     @classmethod
     def tearDownClass(cls) -> None:
