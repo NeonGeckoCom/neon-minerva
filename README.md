@@ -106,7 +106,10 @@ The following top-level sections can be added to intent test configuration:
   to expected: `callback_data` (list keys or dict data), `min_confidence`, and
   `max_confidence`
 - `common play`: TBD
-
+- `ready event`: Optional event name to wait for before starting tests. For example,
+  a skill may set `_update_event` after doing some long-running process at initialization;
+  configuring `ready event: _update_event` means intent tests will not start until
+  the skill has updated and is ready to handle inputs.
 ## Advanced Usage
 In addition to convenient CLI methods, this package also provides test cases that
 may be extended.
