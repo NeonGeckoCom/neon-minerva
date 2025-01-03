@@ -73,9 +73,10 @@ def rmq_instance(request, tmp_path_factory):
     # Init RMQ config
     rmq_username = environ.get("TEST_RMQ_USERNAME", "test_llm_user")
     rmq_password = environ.get("TEST_RMQ_PASSWORD", "test_llm_password")
-    rmq_vhost = environ.get("TEST_RMQ_VHOST", "/test")
+    rmq_vhosts = environ.get("TEST_RMQ_VHOSTS", "/test")
     rabbit_executor.rabbitctl_output("add_user", rmq_username, rmq_password)
-    rabbit_executor.rabbitctl_output("add_vhost", rmq_vhost)
-    rabbit_executor.rabbitctl_output("set_permissions", "-p", rmq_vhost,
-                                     rmq_username, ".*", ".*", ".*")
+    for vhost in rmq_vhosts.split(","):
+        rabbit_executor.rabbitctl_output("add_vhost", vhost)
+        rabbit_executor.rabbitctl_output("set_permissions", "-p", vhost,
+                                         rmq_username, ".*", ".*", ".*")
     request.cls.rmq_instance = rabbit_executor
