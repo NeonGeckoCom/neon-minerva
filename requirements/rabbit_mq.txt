@@ -1,1 +1,1 @@
-pytest-rabbitmq
+pytest-rabbitmq~=3.0
