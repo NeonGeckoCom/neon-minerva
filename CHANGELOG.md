@@ -1,52 +1,28 @@
 # Changelog
 
-## [0.1.1a7](https://github.com/NeonGeckoCom/neon-minerva/tree/0.1.1a7) (2024-02-23)
+## [0.2.1a3](https://github.com/NeonGeckoCom/neon-minerva/tree/0.2.1a3) (2025-01-24)
 
-[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.1.1a6...0.1.1a7)
-
-**Merged pull requests:**
-
-- Update to address review comments [\#21](https://github.com/NeonGeckoCom/neon-minerva/pull/21) ([NeonDaniel](https://github.com/NeonDaniel))
-
-## [0.1.1a6](https://github.com/NeonGeckoCom/neon-minerva/tree/0.1.1a6) (2024-02-01)
-
-[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.1.1a5...0.1.1a6)
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.2.1a2...0.2.1a3)
 
 **Merged pull requests:**
 
-- Document skill tests and update ovos-utils dependency spec [\#19](https://github.com/NeonGeckoCom/neon-minerva/pull/19) ([NeonDaniel](https://github.com/NeonDaniel))
+- Implement RabbitMQ test fixture [\#28](https://github.com/NeonGeckoCom/neon-minerva/pull/28) ([NeonDaniel](https://github.com/NeonDaniel))
 
-## [0.1.1a5](https://github.com/NeonGeckoCom/neon-minerva/tree/0.1.1a5) (2024-01-15)
+## [0.2.1a2](https://github.com/NeonGeckoCom/neon-minerva/tree/0.2.1a2) (2024-10-29)
 
-[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.1.1a4...0.1.1a5)
-
-**Merged pull requests:**
-
-- Utterance handling bugfixes [\#18](https://github.com/NeonGeckoCom/neon-minerva/pull/18) ([NeonDaniel](https://github.com/NeonDaniel))
-
-## [0.1.1a4](https://github.com/NeonGeckoCom/neon-minerva/tree/0.1.1a4) (2024-01-15)
-
-[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.1.1a3...0.1.1a4)
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.2.1a1...0.2.1a2)
 
 **Merged pull requests:**
 
-- Patch FakeBus object for MessageBusClient compat. [\#17](https://github.com/NeonGeckoCom/neon-minerva/pull/17) ([NeonDaniel](https://github.com/NeonDaniel))
+- Update intent tests to include utterance in failure logs [\#27](https://github.com/NeonGeckoCom/neon-minerva/pull/27) ([NeonDaniel](https://github.com/NeonDaniel))
 
-## [0.1.1a3](https://github.com/NeonGeckoCom/neon-minerva/tree/0.1.1a3) (2024-01-15)
+## [0.2.1a1](https://github.com/NeonGeckoCom/neon-minerva/tree/0.2.1a1) (2024-09-17)
 
-[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.1.1a2...0.1.1a3)
-
-**Merged pull requests:**
-
-- Add CommonQuery test support [\#16](https://github.com/NeonGeckoCom/neon-minerva/pull/16) ([NeonDaniel](https://github.com/NeonDaniel))
-
-## [0.1.1a2](https://github.com/NeonGeckoCom/neon-minerva/tree/0.1.1a2) (2024-01-02)
-
-[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.1.0...0.1.1a2)
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.2.0...0.2.1a1)
 
 **Merged pull requests:**
 
-- Make skill references compatible with ovos-workshop changes [\#15](https://github.com/NeonGeckoCom/neon-minerva/pull/15) ([NeonDaniel](https://github.com/NeonDaniel))
+- Update OVOS depdencies and fix imports [\#26](https://github.com/NeonGeckoCom/neon-minerva/pull/26) ([NeonDaniel](https://github.com/NeonDaniel))
 
 
 

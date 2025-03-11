@@ -1,6 +1,6 @@
 # NEON AI (TM) SOFTWARE, Software Development Kit & Application Framework
 # All trademark and other rights reserved by their respective owners
-# Copyright 2008-2022 Neongecko.com Inc.
+# Copyright 2008-2025 Neongecko.com Inc.
 # Contributors: Daniel McKnight, Guy Daniels, Elon Gasper, Richard Leeds,
 # Regina Bloomstine, Casimiro Ferreira, Andrii Pernatii, Kirill Hrymailo
 # BSD-3 License
@@ -127,7 +127,7 @@ class TestSkillIntentMatching(unittest.TestCase):
                     self.assertIsInstance(match, IntentMatch)
                     self.assertEqual(match.skill_id, self.test_skill_id)
                     self.assertEqual(match.intent_type,
-                                     f"{self.test_skill_id}:{intent}")
+                                     f"{self.test_skill_id}:{intent}", utt)
                     self.assertEqual(match.utterance, utt)
 
                     for datum in data:
@@ -139,7 +139,7 @@ class TestSkillIntentMatching(unittest.TestCase):
                             value = None
                         self.assertIn(name, match.intent_data, utt)
                         if value:
-                            self.assertEqual(match.intent_data[name], value)
+                            self.assertEqual(match.intent_data[name], value, utt)
 
     def test_negative_intents(self):
         config = self.negative_intents.pop('config', {})
