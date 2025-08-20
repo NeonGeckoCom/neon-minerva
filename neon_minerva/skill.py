@@ -28,7 +28,7 @@ import yaml
 
 from os.path import expanduser, isfile, isdir
 from typing import Optional
-from ovos_utils.messagebus import FakeBus
+from ovos_utils.fakebus import FakeBus
 from ovos_workshop.skills.base import BaseSkill
 from ovos_utils.log import LOG
 
