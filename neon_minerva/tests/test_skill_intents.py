@@ -33,7 +33,7 @@ from os.path import join, exists
 from unittest.mock import Mock
 
 from ovos_bus_client import Message
-from ovos_utils.messagebus import FakeBus
+from ovos_utils.fakebus import FakeBus
 from ovos_utils.log import LOG
 
 from neon_minerva.exceptions import IntentException
