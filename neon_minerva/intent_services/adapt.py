@@ -30,7 +30,7 @@ from typing import Optional
 from adapt.engine import IntentDeterminationEngine
 from ovos_workshop.intents import open_intent_envelope
 from ovos_utils.log import LOG
-from ovos_utils.messagebus import FakeBus
+from ovos_utils.fakebus import FakeBus
 from ovos_bus_client.util import get_message_lang
 
 from neon_minerva.exceptions import IntentNotMatched, ConfidenceTooLow
@@ -76,6 +76,7 @@ class AdaptContainer:
             LOG.exception(err)
 
         if not best_intent:
+            LOG.warning(f"{len(self.adapt.intent_parsers)} Intents loaded")
             raise IntentNotMatched(utterance)
         LOG.debug(best_intent)
         skill_id = best_intent['intent_type'].split(":")[0]
