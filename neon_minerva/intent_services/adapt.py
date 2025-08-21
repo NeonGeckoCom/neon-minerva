@@ -50,7 +50,7 @@ class AdaptContainer:
         entity_type = message.data.get('entity_type')
         regex_str = message.data.get('regex')
         alias_of = message.data.get('alias_of')
-        lang = get_message_lang(message)
+        lang = get_message_lang(message).lower()
         if lang != self.lang:
             return
         if regex_str:
