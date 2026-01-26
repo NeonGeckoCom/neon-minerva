@@ -174,7 +174,8 @@ class TestSkillIntentMatching(unittest.TestCase):
                     data = dict()
                 utt = utt.lower()
                 message = Message('test_utterance',
-                                  {"utterance": utt, "lang": lang})
+                                  {"utterance": utt, "lang": lang},
+                                  {"session": {"lang": lang}})
                 self.common_query_service.handle_question(message)
                 response = qa_response.call_args[0][0]
                 callback = qa_response.call_args[0][0]
