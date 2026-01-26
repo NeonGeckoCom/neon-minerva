@@ -101,6 +101,8 @@ class CommonQuery:
         """
         utt = message.data.get('utterance')
         sid = "test_session"
+        message.context.setdefault('session', {})
+        message.context['session']['session_id'] = sid
         # TODO: Why are defaults not creating new objects on init?
         query = Query(session_id=sid, query=utt, replies=[], extensions=[],
                       query_time=time.time(), timeout_time=time.time() + 1,
