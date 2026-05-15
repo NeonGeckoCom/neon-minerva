@@ -26,6 +26,7 @@
 
 import atexit
 import os
+import signal
 import sys
 import threading
 import time
@@ -42,27 +43,71 @@ from pytest_rabbitmq.factories.process import get_config
 # any that test code or another fixture forgot to release.
 _ACTIVE_RMQ_EXECUTORS: "list[RabbitMqExecutor]" = []
 
-# How long, after our atexit hook fires, we'll let the interpreter attempt
-# a normal shutdown before forcefully exiting. The Erlang VM that backs
-# RabbitMQ has been observed to ignore the signal sent by ``mirakuru``'s
-# ``__del__``/``atexit`` cleanup on GitHub-hosted runners, leaving pytest
-# blocked indefinitely after it has already reported its results. The
-# watchdog runs in a daemon thread so it can never itself prevent exit.
+# Maximum time we'll spend trying to gracefully stop a single
+# ``RabbitMqExecutor`` before falling back to a direct SIGKILL of its
+# process group.
+_RMQ_STOP_TIMEOUT_SECONDS = 10
+
+# How long, after the test session reaches teardown / interpreter shutdown,
+# we'll let the rest of the cleanup run before forcefully exiting. The
+# Erlang VM that backs RabbitMQ has been observed to ignore the signal
+# sent by ``mirakuru``'s ``stop`` / ``__del__`` / ``atexit`` cleanup on
+# GitHub-hosted runners, leaving pytest blocked after it has already
+# reported its results. The watchdog runs in a daemon thread so it can
+# never itself prevent exit.
 _RMQ_FORCE_EXIT_GRACE_SECONDS = 30
 
 
-def _stop_executor_quietly(executor):
-    """Best-effort teardown that never raises into the test session."""
-    if executor is None:
+def _kill_executor_processgroup(executor):
+    """Send SIGKILL to the executor's process group, no questions asked.
+
+    ``mirakuru`` sets ``os.setsid`` as ``preexec_fn`` for its subprocesses
+    so the spawned process is its own group leader and ``killpg`` reaches
+    every child the broker may have started. We deliberately avoid
+    ``mirakuru.SimpleExecutor.stop`` / ``kill(wait=True)`` here because
+    both call ``self.process.wait()`` which can block indefinitely if the
+    subprocess refuses to die.
+    """
+    process = getattr(executor, "process", None)
+    pid = getattr(process, "pid", None)
+    if not pid:
         return
     try:
-        if executor.running():
-            executor.stop()
-    except Exception:
+        os.killpg(pid, signal.SIGKILL)
+    except (OSError, ProcessLookupError):
+        pass
+
+
+def _stop_executor_quietly(executor):
+    """Best-effort, time-bounded teardown that never blocks indefinitely.
+
+    First try ``executor.stop()`` in a daemon thread so we can give up if
+    ``mirakuru`` blocks waiting for the broker to die. If that does not
+    return inside ``_RMQ_STOP_TIMEOUT_SECONDS``, fall back to a direct
+    ``killpg(SIGKILL)`` on the broker's process group and move on.
+    """
+    if executor is None:
+        return
+
+    stop_done = threading.Event()
+
+    def _do_stop():
         try:
-            executor.kill(wait=False)
+            if executor.running():
+                executor.stop()
         except Exception:
             pass
+        finally:
+            stop_done.set()
+
+    threading.Thread(
+        target=_do_stop,
+        name="neon-minerva-rmq-stop",
+        daemon=True,
+    ).start()
+
+    if not stop_done.wait(_RMQ_STOP_TIMEOUT_SECONDS):
+        _kill_executor_processgroup(executor)
 
 
 def _force_exit_on_stalled_shutdown():
@@ -78,17 +123,26 @@ def _force_exit_on_stalled_shutdown():
     for executor in list(_ACTIVE_RMQ_EXECUTORS):
         _stop_executor_quietly(executor)
     _ACTIVE_RMQ_EXECUTORS.clear()
+    _arm_force_exit_watchdog(_RMQ_FORCE_EXIT_GRACE_SECONDS, exit_code=0)
 
-    grace = _RMQ_FORCE_EXIT_GRACE_SECONDS
 
+def _arm_force_exit_watchdog(grace_seconds, exit_code=0):
+    """Spawn a daemon thread that ``os._exit``s after ``grace_seconds``.
+
+    Daemon threads are killed automatically when the main thread exits, so
+    on a healthy shutdown the watchdog never fires. It only matters when
+    the surrounding teardown code stalls -- in which case the watchdog
+    forcibly terminates the process so the surrounding job (CI step, etc.)
+    can move on instead of silently deadlocking.
+    """
     def _watchdog():
-        time.sleep(grace)
+        time.sleep(grace_seconds)
         sys.stderr.write(
-            f"\n[neon_minerva.rabbit_mq] forcing process exit after {grace}s "
-            f"grace period; normal shutdown stalled.\n"
+            f"\n[neon_minerva.rabbit_mq] forcing process exit after "
+            f"{grace_seconds}s grace period; shutdown stalled.\n"
         )
         sys.stderr.flush()
-        os._exit(0)
+        os._exit(exit_code)
 
     threading.Thread(
         target=_watchdog,
@@ -105,6 +159,16 @@ atexit.register(_force_exit_on_stalled_shutdown)
 
 @pytest.fixture(scope="class")
 def rmq_instance(request, tmp_path_factory):
+    """Start a RabbitMQ subprocess for the test class and stop it after.
+
+    The fixture used to leak the broker subprocess and rely solely on
+    ``mirakuru``'s ``atexit`` cleanup. That cleanup is unreliable in CI
+    (notably on GitHub Actions) because the Erlang VM backing RabbitMQ does
+    not always die when the wrapper process is signalled at interpreter
+    shutdown, which leaves ``pytest`` hung after every test has reported as
+    ``PASSED``. We now perform an explicit teardown via ``yield``/``finally``
+    so the broker is stopped as soon as the test class is done with it.
+    """
     config = get_config(request)
     rabbit_ctl = config["ctl"]
     rabbit_server = config["server"]
