@@ -110,6 +110,13 @@ def _stop_executor_quietly(executor):
         _kill_executor_processgroup(executor)
 
 
+def _stop_all_tracked_executors():
+    """Stop every executor we know about (best-effort, time-bounded)."""
+    for executor in list(_ACTIVE_RMQ_EXECUTORS):
+        _stop_executor_quietly(executor)
+    _ACTIVE_RMQ_EXECUTORS.clear()
+
+
 def _force_exit_on_stalled_shutdown():
     """Last-resort safety net for interpreter shutdown.
 
@@ -119,10 +126,16 @@ def _force_exit_on_stalled_shutdown():
     ``_RMQ_FORCE_EXIT_GRACE_SECONDS`` seconds. The watchdog spawns and the
     hook returns immediately so other ``atexit`` hooks (notably
     ``mirakuru.base.cleanup_subprocesses``) still get to run.
+
+    NOTE: this is only a fallback. Python runs ``atexit`` hooks *after* it
+    has joined every non-daemon thread, so if a consuming project leaves a
+    non-daemon thread alive (e.g. a pika consumer that never exited), the
+    interpreter will be stuck on that join and this hook will never fire.
+    The primary safety net lives in the ``pytest_sessionfinish`` hook
+    contributed by this module via the ``pytest11`` entry point, which runs
+    early enough that the watchdog can take effect.
     """
-    for executor in list(_ACTIVE_RMQ_EXECUTORS):
-        _stop_executor_quietly(executor)
-    _ACTIVE_RMQ_EXECUTORS.clear()
+    _stop_all_tracked_executors()
     _arm_force_exit_watchdog(_RMQ_FORCE_EXIT_GRACE_SECONDS, exit_code=0)
 
 
@@ -224,3 +237,22 @@ def rmq_instance(request, tmp_path_factory):
             _ACTIVE_RMQ_EXECUTORS.remove(rabbit_executor)
         except ValueError:
             pass
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """Stop tracked executors and arm a hard-exit watchdog.
+
+    This hook fires while the interpreter is still healthy (before Python
+    starts joining non-daemon threads at shutdown), which is the only point
+    at which a daemon-thread watchdog can reliably take effect: ``atexit``
+    hooks run *after* the non-daemon thread join, so they cannot rescue a
+    process that's stuck because some consumer or pika ioloop thread never
+    exited.
+
+    Discoverable when this module is loaded as a pytest plugin via the
+    ``pytest11`` entry point declared in ``setup.py``.
+    """
+    _stop_all_tracked_executors()
+    grace = _RMQ_FORCE_EXIT_GRACE_SECONDS
+    code = int(exitstatus) if isinstance(exitstatus, int) else 0
+    _arm_force_exit_watchdog(grace, exit_code=code)
