@@ -24,6 +24,12 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import atexit
+import os
+import sys
+import threading
+import time
+
 import pytest
 
 from os import environ
@@ -32,8 +38,83 @@ from pytest_rabbitmq.factories.executor import RabbitMqExecutor
 from pytest_rabbitmq.factories.process import get_config
 
 
+# Track every executor we hand out so that interpreter shutdown can stop
+# any that test code or another fixture forgot to release.
+_ACTIVE_RMQ_EXECUTORS: "list[RabbitMqExecutor]" = []
+
+# How long, after our atexit hook fires, we'll let the interpreter attempt
+# a normal shutdown before forcefully exiting. The Erlang VM that backs
+# RabbitMQ has been observed to ignore the signal sent by ``mirakuru``'s
+# ``__del__``/``atexit`` cleanup on GitHub-hosted runners, leaving pytest
+# blocked indefinitely after it has already reported its results. The
+# watchdog runs in a daemon thread so it can never itself prevent exit.
+_RMQ_FORCE_EXIT_GRACE_SECONDS = 30
+
+
+def _stop_executor_quietly(executor):
+    """Best-effort teardown that never raises into the test session."""
+    if executor is None:
+        return
+    try:
+        if executor.running():
+            executor.stop()
+    except Exception:
+        try:
+            executor.kill(wait=False)
+        except Exception:
+            pass
+
+
+def _force_exit_on_stalled_shutdown():
+    """Last-resort safety net for interpreter shutdown.
+
+    Stops any executors we still know about (in case a test or downstream
+    fixture leaked one) and arms a daemon-thread watchdog that ``os._exit``s
+    if the rest of the shutdown sequence does not complete in
+    ``_RMQ_FORCE_EXIT_GRACE_SECONDS`` seconds. The watchdog spawns and the
+    hook returns immediately so other ``atexit`` hooks (notably
+    ``mirakuru.base.cleanup_subprocesses``) still get to run.
+    """
+    for executor in list(_ACTIVE_RMQ_EXECUTORS):
+        _stop_executor_quietly(executor)
+    _ACTIVE_RMQ_EXECUTORS.clear()
+
+    grace = _RMQ_FORCE_EXIT_GRACE_SECONDS
+
+    def _watchdog():
+        time.sleep(grace)
+        sys.stderr.write(
+            f"\n[neon_minerva.rabbit_mq] forcing process exit after {grace}s "
+            f"grace period; normal shutdown stalled.\n"
+        )
+        sys.stderr.flush()
+        os._exit(0)
+
+    threading.Thread(
+        target=_watchdog,
+        name="neon-minerva-rmq-force-exit",
+        daemon=True,
+    ).start()
+
+
+# Register at import time so the hook is always armed when the fixture is
+# in use, regardless of whether ``neon-minerva`` is loaded as a pytest
+# plugin via entry points or simply imported by a test module.
+atexit.register(_force_exit_on_stalled_shutdown)
+
+
 @pytest.fixture(scope="class")
 def rmq_instance(request, tmp_path_factory):
+    """Start a RabbitMQ subprocess for the test class and stop it after.
+
+    The fixture used to leak the broker subprocess and rely solely on
+    ``mirakuru``'s ``atexit`` cleanup. That cleanup is unreliable in CI
+    (notably on GitHub Actions) because the Erlang VM backing RabbitMQ does
+    not always die when the wrapper process is signalled at interpreter
+    shutdown, which leaves ``pytest`` hung after every test has reported as
+    ``PASSED``. We now perform an explicit teardown via ``yield``/``finally``
+    so the broker is stopped as soon as the test class is done with it.
+    """
     config = get_config(request)
     rabbit_ctl = config["ctl"]
     rabbit_server = config["server"]
@@ -69,6 +150,7 @@ def rmq_instance(request, tmp_path_factory):
     )
 
     rabbit_executor.start()
+    _ACTIVE_RMQ_EXECUTORS.append(rabbit_executor)
 
     # Init RMQ config
     rmq_username = environ.get("TEST_RMQ_USERNAME", "test_user")
@@ -80,3 +162,11 @@ def rmq_instance(request, tmp_path_factory):
         rabbit_executor.rabbitctl_output("set_permissions", "-p", vhost,
                                          rmq_username, ".*", ".*", ".*")
     request.cls.rmq_instance = rabbit_executor
+    try:
+        yield rabbit_executor
+    finally:
+        _stop_executor_quietly(rabbit_executor)
+        try:
+            _ACTIVE_RMQ_EXECUTORS.remove(rabbit_executor)
+        except ValueError:
+            pass
