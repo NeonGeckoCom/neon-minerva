@@ -78,6 +78,9 @@ setuptools.setup(
                     "padatious": get_requirements("padatious.txt"),
                     "rmq": get_requirements("rabbit_mq.txt")},
     entry_points={
-        'console_scripts': ['minerva=neon_minerva.cli:neon_minerva_cli']
+        'console_scripts': ['minerva=neon_minerva.cli:neon_minerva_cli'],
+        'pytest11': [
+            'neon.rabbit_mq = neon_minerva.integration.rabbit_mq',
+        ],
     }
 )
