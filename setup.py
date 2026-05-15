@@ -79,12 +79,8 @@ setuptools.setup(
                     "rmq": get_requirements("rabbit_mq.txt")},
     entry_points={
         'console_scripts': ['minerva=neon_minerva.cli:neon_minerva_cli'],
-        # Register the RabbitMQ integration module as a pytest plugin so
-        # its ``pytest_sessionfinish`` hook is discovered automatically by
-        # any project that depends on neon-minerva, even when consumers
-        # only ``import`` the fixture rather than installing as a plugin.
         'pytest11': [
-            'neon_minerva_rabbit_mq = neon_minerva.integration.rabbit_mq',
+            'neon.rabbit_mq = neon_minerva.integration.rabbit_mq',
         ],
     }
 )

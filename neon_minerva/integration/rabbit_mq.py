@@ -172,16 +172,7 @@ atexit.register(_force_exit_on_stalled_shutdown)
 
 @pytest.fixture(scope="class")
 def rmq_instance(request, tmp_path_factory):
-    """Start a RabbitMQ subprocess for the test class and stop it after.
-
-    The fixture used to leak the broker subprocess and rely solely on
-    ``mirakuru``'s ``atexit`` cleanup. That cleanup is unreliable in CI
-    (notably on GitHub Actions) because the Erlang VM backing RabbitMQ does
-    not always die when the wrapper process is signalled at interpreter
-    shutdown, which leaves ``pytest`` hung after every test has reported as
-    ``PASSED``. We now perform an explicit teardown via ``yield``/``finally``
-    so the broker is stopped as soon as the test class is done with it.
-    """
+    """Start a RabbitMQ subprocess for the test class and stop it after."""
     config = get_config(request)
     rabbit_ctl = config["ctl"]
     rabbit_server = config["server"]
