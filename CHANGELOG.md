@@ -1,28 +1,40 @@
 # Changelog
 
-## [0.2.1a3](https://github.com/NeonGeckoCom/neon-minerva/tree/0.2.1a3) (2025-01-24)
+## [0.3.1a5](https://github.com/NeonGeckoCom/neon-minerva/tree/0.3.1a5) (2026-05-28)
 
-[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.2.1a2...0.2.1a3)
-
-**Merged pull requests:**
-
-- Implement RabbitMQ test fixture [\#28](https://github.com/NeonGeckoCom/neon-minerva/pull/28) ([NeonDaniel](https://github.com/NeonDaniel))
-
-## [0.2.1a2](https://github.com/NeonGeckoCom/neon-minerva/tree/0.2.1a2) (2024-10-29)
-
-[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.2.1a1...0.2.1a2)
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.3.1a4...0.3.1a5)
 
 **Merged pull requests:**
 
-- Update intent tests to include utterance in failure logs [\#27](https://github.com/NeonGeckoCom/neon-minerva/pull/27) ([NeonDaniel](https://github.com/NeonDaniel))
+- Allow RMQ entrypoint without optional extras [\#34](https://github.com/NeonGeckoCom/neon-minerva/pull/34) ([NeonDaniel](https://github.com/NeonDaniel))
 
-## [0.2.1a1](https://github.com/NeonGeckoCom/neon-minerva/tree/0.2.1a1) (2024-09-17)
+## [0.3.1a4](https://github.com/NeonGeckoCom/neon-minerva/tree/0.3.1a4) (2026-05-15)
 
-[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.2.0...0.2.1a1)
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.3.1a3...0.3.1a4)
+
+## [0.3.1a3](https://github.com/NeonGeckoCom/neon-minerva/tree/0.3.1a3) (2026-01-26)
+
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.3.1a2...0.3.1a3)
 
 **Merged pull requests:**
 
-- Update OVOS depdencies and fix imports [\#26](https://github.com/NeonGeckoCom/neon-minerva/pull/26) ([NeonDaniel](https://github.com/NeonDaniel))
+- Update CommonQuery tests to support session language handling [\#32](https://github.com/NeonGeckoCom/neon-minerva/pull/32) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [0.3.1a2](https://github.com/NeonGeckoCom/neon-minerva/tree/0.3.1a2) (2025-08-21)
+
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.3.1a1...0.3.1a2)
+
+**Merged pull requests:**
+
+- Resolve Adapt test errors [\#31](https://github.com/NeonGeckoCom/neon-minerva/pull/31) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [0.3.1a1](https://github.com/NeonGeckoCom/neon-minerva/tree/0.3.1a1) (2025-08-20)
+
+[Full Changelog](https://github.com/NeonGeckoCom/neon-minerva/compare/0.3.0...0.3.1a1)
+
+**Merged pull requests:**
+
+- Update for ovos-core 1.x Compat. [\#30](https://github.com/NeonGeckoCom/neon-minerva/pull/30) ([NeonDaniel](https://github.com/NeonDaniel))
 
 
 
