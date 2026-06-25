@@ -27,7 +27,7 @@
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from ovos_utils.log import LOG
-from ovos_utils.messagebus import FakeBus
+from ovos_utils.fakebus import FakeBus
 
 from neon_minerva.exceptions import IntentNotMatched, ConfidenceTooLow
 from neon_minerva.intent_services import IntentMatch
@@ -91,6 +91,7 @@ class TestPadatiousMatcher:
     def test_intent(self, utterance: str) -> IntentMatch:
         intent = self.padatious.calc_intent(utterance)
         if not intent:
+            LOG.warning(f"{len(self.padatious.padatious.intents.objects)} objects loaded")
             raise IntentNotMatched(utterance)
         conf = intent.get("conf") or 0.0
         if conf < self.min_conf:

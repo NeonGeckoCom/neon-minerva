@@ -28,7 +28,7 @@
 
 from padacioso import IntentContainer
 from ovos_utils.log import LOG
-from ovos_utils.messagebus import FakeBus
+from ovos_utils.fakebus import FakeBus
 
 
 class PadaciosoContainer:

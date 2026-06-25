@@ -27,13 +27,25 @@
 import pytest
 
 from os import environ
-from port_for import get_port
-from pytest_rabbitmq.factories.executor import RabbitMqExecutor
-from pytest_rabbitmq.factories.process import get_config
+
+try:
+    from port_for import get_port
+    from pytest_rabbitmq.factories.executor import RabbitMqExecutor
+    from pytest_rabbitmq.factories.process import get_config
+    _INITIALIZED = True
+except ImportError:
+    _INITIALIZED = False
 
 
 @pytest.fixture(scope="class")
 def rmq_instance(request, tmp_path_factory):
+    """Start a RabbitMQ subprocess for the test class and stop it after."""
+
+    if not _INITIALIZED:
+        raise ModuleNotFoundError(
+            "Missing optional extra dependencies install `neon-minerva[rmq]`"
+        )
+
     config = get_config(request)
     rabbit_ctl = config["ctl"]
     rabbit_server = config["server"]
