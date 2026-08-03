@@ -137,6 +137,9 @@ class TestSkillResources(unittest.TestCase):
 
     def test_dialog_files(self):
         for lang in self.supported_languages:
+            if not self.dialog:
+                self.assertIsNone(self.skill._lang_resources[lang].dialog_renderer)
+                return
             dialogs = self.skill._lang_resources[lang].dialog_renderer.templates
             for dialog in self.dialog:
                 self.assertIn(dialog, dialogs.keys(),
